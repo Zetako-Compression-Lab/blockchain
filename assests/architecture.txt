@@ -1,0 +1,42 @@
+zetako-github/
+│
+├── README.md                 # Full project presentation
+├── LICENSE                   # License (usage terms & protection)
+├── CHANGELOG.md              # Version history
+├── ROADMAP.md                # Future milestones and goals
+│
+├── /docs                     # Technical documentation
+│   ├── overview.md           # Technical overview & architecture
+│   ├── installation.md       # Installing and configuring binaries
+│   ├── usage-cli.md          # Command-line usage
+│   ├── usage-api.md          # API / language bindings usage
+│   ├── benchmarks.md         # Test methodology and performance
+│   └── supported-formats.md  # Supported data formats (JSON, RLP, etc.)
+│
+├── /examples                 # Usage examples
+│   ├── ethereum_example.md   # Test on public Ethereum dataset
+│   ├── solana_example.md     # Test on public Solana dataset
+│   ├── avalanche_example.md  # Test on public Avalanche dataset
+│   └── generic_example.md    # Test on generic JSON/binary files
+│
+├── /benchmarks               # Performance results
+│   ├── solana-blocks.csv     # Solana compression results
+│   ├── ethereum-blocks.csv   # Ethereum compression results
+│   ├── avalanche-blocks.csv  # Avalanche compression results
+│   └── graphs/               # PNG/JPG performance charts
+│
+├── /scripts                  # Open-source helper scripts
+│   ├── fetch_datasets.py     # Download public datasets
+│   ├── analyze_results.py    # Analyze logs & benchmarks
+│   └── wrapper_cli.py        # CLI wrapper for running Zetako binaries
+│
+├── /bin                      # Later
+│   ├── zetako-win-x64.exe
+│   ├── zetako-linux-x64
+│   └── zetako-macos-arm64
+│
+└── /assets                   # Images & diagrams
+    ├── architecture.png
+    ├── pipeline_diagram.png
+    ├── logo.png
+    └── screenshots/
