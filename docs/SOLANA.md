@@ -14,7 +14,7 @@ The public Solana mainnet corpus contains:
 - `getBlockProduction`;
 - sampled `getTransaction` responses.
 
-The historical corpus contains **21 files / 26,106,696 raw bytes**.
+The current public corpus contains **21 files / 26,106,696 raw bytes**.
 
 ## Why it matters
 
@@ -25,7 +25,21 @@ Full Solana block responses combine account keys, signatures, instructions, bala
 - smaller exports and archive transfers;
 - evidence for deciding whether deeper validator/storage integration is worth testing.
 
-## Published native C results
+## Latest supported profile result
+
+Latest reference run: Apple M4, native C release, `-O3 -DNDEBUG -mcpu=native`, `solana-rpc`, 30 iterations.
+
+| Files | Raw bytes | ZChain bytes | Savings | Encode | Decode | Encode ns/B | Decode ns/B |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 21 | 26,106,696 | **4,493,986** | **82.79%** | **110.40 MiB/s** | **67.93 MiB/s** | 8.638 | 14.039 |
+
+All benchmarked files round-trip exactly, and the release passed the package test and sanitizer gates.
+
+[Open the full 1.2.0 M4 benchmark report →](ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
+
+## Historical profile evolution
+
+Earlier public release measurements remain useful for showing how the generic codec evolved before the current blockchain engine.
 
 | Workload | v4 encode | v4 decode | v4 behavior | Speed encode | Speed decode | Size delta vs v4 |
 |---|---:|---:|---|---:|---:|---:|
@@ -35,9 +49,7 @@ Full Solana block responses combine account keys, signatures, instructions, bala
 | `getBlockProduction` | 38.20 | 22.55 | v3-compatible output | 42.37 | 24.34 | **-1.41%** |
 | `getTransaction` | 46.46 | 35.77 | v3-compatible output | 53.65 | 31.59 | **-0.07%** |
 
-Throughput is MiB/s from the documented Apple M4 native release benchmark.
-
-The clearest public Solana workload is full block JSON: **84.18% savings** under v4, with the Speed profile increasing encode throughput to **138.55 MiB/s**.
+Those figures are historical profile measurements, not replacements for the latest 1.2.0 reference run above.
 
 ## Current model status
 

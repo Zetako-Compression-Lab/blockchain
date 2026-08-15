@@ -39,22 +39,24 @@ The production direction removes that global scan. The caller explicitly selects
 
 That means the blockchain integration says **what kind of payload it is**; ZChain does not search arbitrary input trying to infer it.
 
-## Current real-corpus result
+## Latest real-corpus result
 
-Apple M4, in-memory C benchmark, same 2,908,507-byte Reth Ethereum JSON corpus:
+Latest reference run: Apple M4, native C release, `-O3 -DNDEBUG -mcpu=native`, 50 iterations, same 2,908,507-byte Reth Ethereum JSON corpus.
 
-| Path | Final bytes | Savings | Encode | Decode |
-|---|---:|---:|---:|---:|
-| Previous `ethereum-block` | 559,234 | 80.77% | 99.32 MiB/s | 63.72 MiB/s |
-| **Negotiated `ethereum-hex`** | **512,808** | **82.37%** | **146.12 MiB/s** | **129.41 MiB/s** |
+| Path | Final bytes | Savings | Encode | Decode | Encode ns/B | Decode ns/B |
+|---|---:|---:|---:|---:|---:|---:|
+| Previous `ethereum-block` | 559,234 | 80.77% | 91.83 MiB/s | 57.70 MiB/s | 10.386 | 16.528 |
+| **Negotiated `ethereum-hex`** | **512,808** | **82.37%** | **131.11 MiB/s** | **114.69 MiB/s** | **7.274** | **8.315** |
 
 Relative to the previous Ethereum path:
 
-- **8.3% smaller compressed output**;
-- **1.47× faster encode**;
-- **2.03× faster decode**.
+- **8.30% smaller compressed output**;
+- **1.43× faster encode**;
+- **1.99× faster decode**.
 
-These figures are specific to this corpus, hardware and build.
+All benchmarked files round-trip exactly, and the release passed `make test` plus ASan/UBSan validation.
+
+[Open the full 1.2.0 M4 benchmark report →](ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
 
 ## Receipts as a compression workload
 
@@ -79,7 +81,17 @@ Reth / Alloy objects
                  negotiated ZCB1 frame
 ```
 
-A native RLP profile will remain `RESEARCH` until spans come from actual client serialization and the same RLP bytes are compared against RAW, v4, Speed and the schema-assisted profile.
+### Current `ETHEREUM_SCHEMA` status
+
+`ETHEREUM_SCHEMA` now has an explicit stream-writer implementation path and the smoke example emits:
+
+```text
+encoding=3 frame=2430
+```
+
+The smoke path passes sanitizer-covered round-trip tests. **No supported-performance number is published yet.** The remaining requirement is real Reth / Alloy RLP bytes plus runtime-provided spans.
+
+A native RLP profile will remain `RESEARCH` until the same real RLP bytes are compared against RAW, v4, Speed and the schema-assisted path.
 
 ## Claim boundary
 

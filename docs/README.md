@@ -16,6 +16,12 @@ This directory is organized as a public engineering and product map rather than 
 - [Benchmark methodology](METHODOLOGY.md)
 - [ZChain vs established codecs](COMPRESSION_COMPARISON.md)
 
+## Latest reference benchmark
+
+- [ZChain Blockchain C 1.2.0 Research — Apple M4 benchmark report](ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
+
+This is the current reference run for the supported/public corpus summaries. It includes Ethereum Reth JSON, Solana mainnet RPC JSON, CometBFT CosmosHub RPC JSON and an Agave ledger-source corpus, plus the `ETHEREUM_SCHEMA` smoke status.
+
 ## Adapter-ready chain pages
 
 - [Polkadot / Substrate](SUBSTRATE.md)
@@ -42,4 +48,4 @@ The older detailed reports remain available because they show how the product ev
 
 ## Reading rule
 
-The short ecosystem pages explain **what ZChain is trying to do and what has been proven**. The detailed reports provide the underlying benchmark history. If a short page and an older report describe different generations, the generation/profile name should always be quoted with the number.
+The short ecosystem pages explain **what ZChain is trying to do and what has been proven**. The latest reference report provides the current benchmark snapshot, while the older detailed reports preserve the evolution. If two reports describe different generations, always quote the generation/profile name with the number.

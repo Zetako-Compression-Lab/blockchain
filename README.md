@@ -23,7 +23,7 @@ The public history is intentionally visible. Each generation exists because the 
 | **ZChain 5 — Speed** | Speed_First | New speed-oriented stream, lighter model, RAW bypass | **126.53 MiB/s encode / 74.67 MiB/s decode** on the same corpus |
 | **ZChain 6 — Blockchain** | ZCB2 / blockchain profiles | First blockchain-specific routing and Ethereum hex specialization | Established that crypto-heavy fields should not always be treated like ordinary structured bytes |
 | **ZChain 7 — Schema** | ZCB3 | Runtime-assisted structure / opaque / reference model | Architecture validated in research microbenchmarks; synthetic figures are not presented as production Reth/Agave throughput |
-| **ZChain 8 — Blockchain Engine** | Blockchain C 1.1.x | Negotiated models, stable public C ABI, ZCB1 frames, installable SDK, multi-chain profile registry | Current product base |
+| **ZChain 8 — Blockchain Engine** | Blockchain C 1.1.x → 1.2.0 Research | Negotiated models, stable public C ABI, ZCB1 frames, installable SDK, multi-chain profile registry, schema stream writer research | Current product line |
 
 ### The change in architecture
 
@@ -54,18 +54,38 @@ The product therefore evolved from a standalone codec into a **blockchain compre
 
 ---
 
+## Latest reference run — Blockchain C 1.2.0 Research
+
+The latest public reference run uses an Apple M4, native C release build with `-O3 -DNDEBUG -mcpu=native`. `make test` and ASan/UBSan pass, and every benchmarked file round-trips exactly.
+
+| Corpus | Payload | Raw bytes | ZChain bytes | Savings | Encode | Decode |
+|---|---|---:|---:|---:|---:|---:|
+| **Ethereum Reth JSON** | `ethereum-hex` | 2,908,507 | **512,808** | **82.37%** | **131.11 MiB/s** | **114.69 MiB/s** |
+| Ethereum Reth JSON | `ethereum-block` | 2,908,507 | 559,234 | 80.77% | 91.83 MiB/s | 57.70 MiB/s |
+| **Solana mainnet RPC JSON** | `solana-rpc` | 26,106,696 | **4,493,986** | **82.79%** | **110.40 MiB/s** | **67.93 MiB/s** |
+| **CometBFT CosmosHub RPC JSON** | `cometbft` | 968,332 | **295,048** | **69.53%** | **67.29 MiB/s** | **43.19 MiB/s** |
+| **Agave ledger source** | `solana-shred` | 879,258 | **222,165** | **74.73%** | **81.81 MiB/s** | **54.38 MiB/s** |
+
+[Open the full 1.2.0 M4 benchmark report →](docs/ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
+
+---
+
 ## Current Ethereum milestone
 
 The strongest current real-corpus specialization is the negotiated `ETHEREUM_HEX` profile on the Reth Ethereum JSON corpus.
 
 | Path | Raw bytes | Final bytes | Savings | Encode | Decode |
 |---|---:|---:|---:|---:|---:|
-| Previous `ethereum-block` path | 2,908,507 | 559,234 | 80.77% | 99.32 MiB/s | 63.72 MiB/s |
-| **Negotiated `ethereum-hex`** | **2,908,507** | **512,808** | **82.37%** | **146.12 MiB/s** | **129.41 MiB/s** |
+| Previous `ethereum-block` path | 2,908,507 | 559,234 | 80.77% | 91.83 MiB/s | 57.70 MiB/s |
+| **Negotiated `ethereum-hex`** | **2,908,507** | **512,808** | **82.37%** | **131.11 MiB/s** | **114.69 MiB/s** |
 
-On this corpus, the negotiated specialization is **8.3% smaller**, **1.47× faster to encode**, and **2.03× faster to decode** than the previous Ethereum path.
+On this run, the negotiated specialization is **8.30% smaller**, **1.43× faster to encode**, and **1.99× faster to decode** than the previous Ethereum path.
 
 [Read the Ethereum page →](docs/ETHEREUM.md)
+
+### Ethereum Schema / RLP status
+
+`ETHEREUM_SCHEMA` now has an explicit stream-writer path and emits `encoding=3` in the sanitizer-covered smoke test, but it is **not yet benchmarked as a supported profile**. The next gate is real Reth / Alloy RLP bytes with runtime-provided spans.
 
 ---
 
@@ -75,11 +95,11 @@ Every page answers the same questions: **what do we compress, why does it matter
 
 | Ecosystem | Current public status | Page |
 |---|---|---|
-| **Ethereum / Reth** | `ETHEREUM_HEX` supported; RLP/schema work next | [Ethereum](docs/ETHEREUM.md) |
+| **Ethereum / Reth** | `ETHEREUM_HEX` supported; schema/RLP research validated at smoke level | [Ethereum](docs/ETHEREUM.md) |
 | **EVM L2 / EVM-compatible** | Ethereum JSON-hex model reusable; chain-specific benches pending | [EVM L2](docs/EVM_L2.md) |
 | **Solana** | Real mainnet RPC corpus measured; RPC profile supported | [Solana](docs/SOLANA.md) |
-| **Agave** | Validator integration and shadow-path engineering | [Agave](docs/AGAVE.md) |
-| **Cosmos / CometBFT** | Real RPC corpus measured; CometBFT RPC profile supported | [Cosmos / CometBFT](docs/COSMOS_COMETBFT.md) |
+| **Agave** | Ledger-source profile measured; validator-side schema integration remains research | [Agave](docs/AGAVE.md) |
+| **Cosmos / CometBFT** | Real CosmosHub RPC corpus measured; CometBFT profile supported | [Cosmos / CometBFT](docs/COSMOS_COMETBFT.md) |
 | **Bitcoin** | Native block / transaction adapter ready; specialized benchmark pending | [Bitcoin](docs/BITCOIN.md) |
 | **Substrate / Cardano / Sui / Aptos / TRON / others** | Adapter-ready or research models | [Model matrix](docs/MODEL_MATRIX.md) |
 
@@ -153,6 +173,7 @@ The comparison focuses on the tradeoff that matters for blockchain infrastructur
 │   ├── MODEL_MATRIX.md             remaining serialization families
 │   ├── METHODOLOGY.md              benchmark rules
 │   ├── COMPRESSION_COMPARISON.md   ZChain vs other codecs
+│   ├── ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md
 │   └── evidence / legacy reports   detailed engineering evidence
 └── assets/                         readable public charts
 ```

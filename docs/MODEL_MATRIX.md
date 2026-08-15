@@ -14,12 +14,12 @@ The public registry distinguishes a **real specialized model** from a model name
 
 | Chain / family | Serialization / surface | Maturity | Current direction | Page |
 |---|---|---|---|---|
-| Ethereum / Reth | JSON-RPC hex | **SUPPORTED** | negotiated `ETHEREUM_HEX` | [Ethereum](ETHEREUM.md) |
-| Ethereum / EVM | native RLP | **RESEARCH** | schema-assisted RLP, opaque crypto, references | [Ethereum](ETHEREUM.md) |
+| Ethereum / Reth | JSON-RPC hex | **SUPPORTED** | negotiated `ETHEREUM_HEX`; 1.2.0 M4 reference run published | [Ethereum](ETHEREUM.md) |
+| Ethereum / EVM | native RLP | **RESEARCH** | `ETHEREUM_SCHEMA` stream writer smoke-valid with `encoding=3`; real Reth/Alloy RLP benchmark pending | [Ethereum](ETHEREUM.md) |
 | Base / Arbitrum / Optimism / Polygon / BNB / Avalanche | EVM JSON-RPC | **SUPPORTED model / chain bench pending** | reuse Ethereum hex family until data justifies divergence | [EVM L2](EVM_L2.md) |
-| Solana | JSON-RPC | **SUPPORTED** | structured RPC profile | [Solana](SOLANA.md) |
-| Agave | shred / entry / validator paths | **RESEARCH** | schema writer + shadow measurement | [Agave](AGAVE.md) |
-| CometBFT | JSON-RPC | **SUPPORTED** | block / results / commit / validator payloads | [Cosmos / CometBFT](COSMOS_COMETBFT.md) |
+| Solana | JSON-RPC | **SUPPORTED** | 26.1 MB real mainnet RPC corpus; 1.2.0 reference run published | [Solana](SOLANA.md) |
+| Agave | ledger source / shred / validator paths | **RESEARCH** | ledger-source corpus measured; live validator schema/transport still research | [Agave](AGAVE.md) |
+| CometBFT | CosmosHub JSON-RPC | **SUPPORTED** | 1.2.0 reference run published | [Cosmos / CometBFT](COSMOS_COMETBFT.md) |
 | Cosmos SDK | protobuf | **ADAPTER_READY** | tags/varints structural; signatures/hashes opaque | [Cosmos / CometBFT](COSMOS_COMETBFT.md) |
 | Bitcoin | raw block / tx / witness | **ADAPTER_READY** | headers + compact integers structural; crypto opaque | [Bitcoin](BITCOIN.md) |
 | Polkadot / Substrate | SCALE | **ADAPTER_READY** | compact integer + hash/signature sidecars | [Substrate](SUBSTRATE.md) |
@@ -28,6 +28,19 @@ The public registry distinguishes a **real specialized model** from a model name
 | Aptos | BCS / RPC | **ADAPTER_READY** | BCS-aware structural model | [Aptos](APTOS.md) |
 | TRON | block / transaction payloads | **ADAPTER_READY** | structured fields + address/signature separation | [TRON](TRON.md) |
 | generic snapshots | key/value / state chunks | **ADAPTER_READY** | per-chain locality models | — |
+
+## Latest supported/reference evidence
+
+| Surface | Savings | Encode | Decode |
+|---|---:|---:|---:|
+| Ethereum Reth JSON `ethereum-hex` | **82.37%** | **131.11 MiB/s** | **114.69 MiB/s** |
+| Solana mainnet RPC `solana-rpc` | **82.79%** | **110.40 MiB/s** | **67.93 MiB/s** |
+| CometBFT CosmosHub RPC `cometbft` | **69.53%** | **67.29 MiB/s** | **43.19 MiB/s** |
+| Agave ledger source `solana-shred` | **74.73%** | **81.81 MiB/s** | **54.38 MiB/s** |
+
+The Agave row is evidence on a ledger-source corpus; it does not upgrade live validator transport to `SUPPORTED`.
+
+[Full 1.2.0 M4 report →](ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
 
 ## Why models follow serialization families
 
@@ -42,4 +55,4 @@ Examples:
 
 ## Promotion policy
 
-An `ADAPTER_READY` model becomes `SUPPORTED` only after a real corpus, exact round trip, optimized native benchmark and public methodology are available. Until then, its page describes **what will be measured**, not fictional performance.
+An `ADAPTER_READY` or `RESEARCH` model becomes `SUPPORTED` only after a real corpus, exact round trip, optimized native benchmark and public methodology are available. Until then, its page describes **what will be measured**, not fictional performance.

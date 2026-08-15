@@ -26,9 +26,21 @@ Potential use cases include:
 - archival and analytical datasets;
 - future state-sync or protobuf-native experiments.
 
-## Published results
+## Latest supported profile result
 
-Representative Apple M4 native C release results:
+Latest reference run: Apple M4, native C release, `-O3 -DNDEBUG -mcpu=native`, `cometbft`, 50 iterations on the CosmosHub RPC corpus.
+
+| Files | Raw bytes | ZChain bytes | Savings | Encode | Decode | Encode ns/B | Decode ns/B |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 25 | 968,332 | **295,048** | **69.53%** | **67.29 MiB/s** | **43.19 MiB/s** | 14.173 | 22.081 |
+
+All benchmarked files round-trip exactly, and the package passed the test and sanitizer gates.
+
+[Open the full 1.2.0 M4 benchmark report →](ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
+
+## Historical profile evolution
+
+Earlier public measurements remain available because they show how the generic codec behaved across individual CometBFT RPC classes before the current blockchain engine.
 
 | Workload | v4 encode | v4 decode | v4 behavior | Speed encode | Speed decode | Size delta vs v4 |
 |---|---:|---:|---|---:|---:|---:|
@@ -38,7 +50,7 @@ Representative Apple M4 native C release results:
 | `consensus_params` | 39.58 | 29.95 | small structured payload | 44.81 | 25.94 | +2.10% |
 | `validators` | 56.07 | 39.64 | 56.90% savings class | 63.34 | 35.16 | +1.02% |
 
-Throughput is MiB/s. The clearest public result is `block_results`: strong density and high encode throughput on a real CometBFT RPC payload class.
+These figures are historical per-workload profile measurements. The 1.2.0 aggregate reference run above is the current supported-profile summary.
 
 ## Current model status
 
@@ -58,6 +70,6 @@ A native Cosmos model should consider:
 
 ## Claim boundary
 
-The current public evidence covers CometBFT JSON-RPC payloads. It does not yet establish Cosmos SDK protobuf, state-sync or validator-network performance.
+The current public evidence covers CometBFT CosmosHub JSON-RPC payloads. It does not yet establish Cosmos SDK protobuf, state-sync or validator-network performance.
 
 Detailed corpus methodology remains in [COMETBFT_COSMOS_BENCHMARKS.md](COMETBFT_COSMOS_BENCHMARKS.md).
