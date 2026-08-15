@@ -1,139 +1,164 @@
-# Zetako Data Compression Engine
+# ZChain
 
-## Official website
-<https://zetako.ai/>
+**Experimental compression integration for blockchain and validator infrastructure.**
 
-## Overview
-Zetako is a **proprietary, high-performance, lossless compression engine** optimized for **blockchain and high-volume data pipelines**.  
-It is purpose-built to handle large, complex payloads such as full blockchain blocks, transaction batches, and network traces — **achieving unmatched compression ratios while maintaining byte-for-byte reversibility**.
+ZChain is Zetako's proprietary compression technology for structured blockchain and infrastructure payloads. This public repository is a **technical showcase**: it documents benchmark methodology, public metrics, and integration models while keeping the proprietary core source and release artifacts private.
 
-Unlike traditional codecs that operate at the file or transaction level, Zetako analyzes **cross-transaction redundancies** and deep structural patterns, enabling superior size reduction without sacrificing speed or compatibility.
+The current public focus is an **Agave integration prototype** with fail-open behavior, SHA-256 round-trip verification, file/directory benchmark tooling, and an optional shred shadow probe that can measure compression without changing the wire format.
 
----
-
-## Key Features
-
-- **Lossless & Deterministic**  
-  100% byte-for-byte reversible, ensuring protocol compliance and replay safety.
-
-- **Blockchain-Optimized**  
-  Works on base64, binary buffers, JSON, RLP, instruction data, and shred-aligned payloads.
-
-- **High Throughput**  
-  Sustains **40–80 MB/s** per core in real-world tests, with minimal CPU overhead.
-
-- **No External Dictionaries**  
-  Zero hidden state — standalone operation in any environment.
-
-- **Cross-Platform**  
-  Available as precompiled binaries for **Windows, Linux, macOS**, and embedded targets (e.g., STM32, ESP32).
-
-- **Flexible Integration**  
-  CLI, SDK, and API bindings for Python, Node.js, C#, Rust, and HTTP.
+> **Current status:** validated development integration and reproducible local benchmarks. Not production-ready yet.
 
 ---
 
-## Architecture Overview
+## Agave integration snapshot
 
-        +------------------+
-        |   Input Payload   |
-        +------------------+
-                 |
-                 v
- +-------------------------------+
- | Parsing & Structural Analysis  |
- +-------------------------------+
-                 |
-                 v
- +-------------------------------+
- | Heuristic Pattern Recognition  |
- +-------------------------------+
-                 |
-                 v
- +-------------------------------+
- | Transformation & Encoding      |
- +-------------------------------+
-                 |
-                 v
-        +------------------+
-        | Compressed Output |
-        +------------------+
+The current Agave-facing integration includes:
 
-*(Full architecture diagrams are available in `/assets/`)*
+- `compression/api` — small codec trait used by Agave-facing code
+- `compression/zchainv3` — ZChain v3 Rust codec adapter
+- `ledger/src/compression.rs` — fail-open compression shims plus benchmark metrics
+- `tools/zchain-bench` — single-file round-trip benchmark
+- `tools/zchain-bench-dir` — directory benchmark with CSV output
+- `ledger/src/zc_shadow.rs` — optional shadow probe for shred payload measurements without changing network behavior
+
+The benchmark layer records raw/compressed size, ratio, savings, encode/decode timing, MiB/s throughput, SHA-256 integrity, and configurable buffer behavior.
 
 ---
 
-## Supported Formats
+## Verified local benchmark example
 
-- **Blockchain Data**
-  - Solana (Base64 shreds, transaction batches, block JSON)
-  - Ethereum / EVM-compatible (RLP, block JSON, receipts)
-  - Avalanche C-Chain, Subnets
-- **Generic**
-  - JSON, CBOR, Protobuf
-  - Binary payloads
-  - Log/event streams
+Observed locally on **2026-08-15**:
 
----
+| Input | Raw bytes | ZChain bytes | Ratio | Savings | Encode | Decode | Integrity |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `ZChain_Benchmark_Report.md` | 6,000 | 2,887 | 0.4812 | **51.88%** | 4.712 ms | 4.635 ms | **SHA-256 OK** |
 
-## Performance Benchmarks
-
-| Dataset                         | Original Size | Compressed Size | Reduction | Encode Speed | Decode Speed |
-|---------------------------------|--------------:|----------------:|----------:|-------------:|-------------:|
-| Solana Block JSON (1 MB)        | 1,049,233 B   | 344,925 B       | 67.13%    | 78 MB/s      | 73 MB/s      |
-| Avalanche Block JSON (2.56 MB)  | 13.14 MB      | 2.56 MB         | 80.55%    | 81.75 MB/s   | 58.57 MB/s   |
-| Ethereum RLP Batch              | 4.8 MB        | 2.01 MB         | 58.1%     | 72 MB/s      | 69 MB/s      |
-
-*(Full benchmark details and methodology are available in `/benchmarks/`)*
+These are **development measurements**, not tuned `--release` numbers and not validator-production claims.
 
 ---
 
-## Integration Options
+## Directory benchmark sample
 
-### CLI
-Run Zetako from the command line:
+![ZChain directory savings](assets/zchain-agave-savings.svg)
+
+| File | Savings | Encode MiB/s | Decode MiB/s | Round trip |
+|---|---:|---:|---:|---|
+| `arithmetic.rs` | 63.26% | 1.07 | 0.44 | OK |
+| `bijection.rs` | 66.39% | 0.89 | 0.29 | OK |
+| `buffer.rs` | 59.06% | 1.05 | 0.40 | OK |
+| `codec.rs` | 72.03% | 2.24 | 0.59 | OK |
+| `main.rs` | 62.53% | 2.24 | 0.81 | OK |
+| `probability.rs` | 49.07% | 0.99 | 0.48 | OK |
+| `utils.rs` | 49.60% | 1.41 | 0.68 | OK |
+
+![ZChain directory throughput](assets/zchain-agave-throughput.svg)
+
+---
+
+## Integration model
+
+```mermaid
+flowchart LR
+    A[Agave / ledger payload] --> B[ZChain integration shim]
+    B --> C{Compression succeeds?}
+    C -->|Yes| D[Compressed bytes + metrics]
+    C -->|No| E[Original bytes]
+    D --> F[Benchmark / shadow measurement]
+    E --> F
+```
+
+### Shadow measurement path
+
+```mermaid
+flowchart LR
+    A[Shred payload] --> B[zc_shadow]
+    B --> C[ZChain encode/decode]
+    C --> D[Raw vs compressed metrics]
+    D --> E[No wire-format change]
+```
+
+The **fail-open** path is intentional for experimentation: compression errors return the original bytes rather than failing validator paths.
+
+---
+
+## Public use cases
+
+### Shred payload shadow measurements
+Measure raw-vs-ZChain behavior on ledger shred payloads without changing network behavior.
+
+### Blockstore storage experiments
+Compare compressed payload size against raw payload size before enabling any write path.
+
+### Validator artifacts
+Run the directory benchmark against captured validator logs, JSON, or other structured artifacts and publish CSV metrics for savings, throughput, and round-trip status.
+
+---
+
+## Reproducible commands
+
 ```bash
-./zetako-linux-x64 encode --input block.json --output block.zcaps
-./zetako-linux-x64 decode --input block.zcaps --output block.json
+cd agave
+./cargo check -p solana-ledger --features zchainv3
+./cargo check -p zchain-bench --features zchainv3
+./cargo check -p zchain-bench-dir --features zchainv3
 
+./cargo run -p zchain-bench --features zchainv3 -- ../ZChain_Benchmark_Report.md
+./cargo run -p zchain-bench-dir --features zchainv3 -- ../zchainv3-rs-full/src /tmp/zchain-src-bench.csv
+```
 
-Use Cases
-Blockchain Validators
-Reduce propagation and archival storage costs.
+See [docs/zchain-agave-benchmarks.md](docs/zchain-agave-benchmarks.md) for the full benchmark note.
 
-Data Lakes & Warehousing
-Minimize storage footprint for structured data.
+---
 
-Real-Time Streaming
-Compress logs/events before network transmission.
+## Public claims and limits
 
-Edge & Embedded Systems
-Run on constrained hardware without sacrificing performance.
+### Supported by the current evidence
 
-Roadmap
+- Agave-facing ZChain v3 integration compiles under the documented feature flag.
+- Single-file and directory round-trip benchmark tooling is available.
+- SHA-256 round-trip integrity is reported by the benchmark path.
+- The documented single-file test produced **51.88% savings** with SHA-256 OK.
+- The documented seven-file directory sample produced **49.07% to 72.03% savings**, with round-trip OK for every listed row.
+- The integration is fail-open by design.
+- A shadow probe can measure shred payload compression without changing the wire format.
 
-Q3 2025: Expanded GPU acceleration (CUDA & Metal).
+### Not claimed yet
 
-Q4 2025: Native Rust bindings.
+- Production-ready Agave integration
+- Production validator throughput
+- Mainnet performance or network-wide bandwidth savings
+- Release-optimized benchmark numbers
+- Wire-format compatibility for an enabled compressed transport path
 
-Q1 2026: Adaptive compression profiles for hybrid workloads.
+The current port still emits `unused_imports` and `static_mut_refs` warnings. They are not blocking the documented benchmarks, but they should be cleaned before production-readiness claims.
 
-See ROADMAP.md for the complete plan.
+---
 
-Licensing & Access
-Zetako binaries are distributed under a commercial license.
-Source code is not publicly available.
+## Public vs. private
 
+**Public here**
 
-Additional Resources
+- benchmark methodology
+- benchmark results
+- integration architecture
+- technical claims that can be externally reviewed
 
-Documentation: See /docs/
+**Private**
 
-Examples: See /examples/
+- proprietary compression core source
+- release binaries and protected builds
+- internal datasets and test infrastructure
+- customer-specific integrations
 
-Benchmarks: See /benchmarks/
+---
 
-Contact: www.zetako.ai
+## Documentation
 
-Disclaimer
-Zetako is proprietary technology. Redistribution, reverse engineering, or modification of the binaries is prohibited without explicit permission from the author
+- [Agave Benchmarks](docs/zchain-agave-benchmarks.md)
+- [Agave Architecture](docs/AGAVE_INTEGRATION.md)
+- [Public Claims](docs/PUBLIC_CLAIMS.md)
+- [Legacy benchmark report](ZChain_Benchmark_Report.md)
+
+For technical evaluation, partnership, or licensing discussions: **contact@zetako.ai**
+
+© Zetako. Proprietary technology. Public documentation in this repository does not grant rights to reproduce, reverse engineer, or redistribute the ZChain implementation.
