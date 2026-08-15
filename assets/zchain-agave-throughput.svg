@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="440" viewBox="0 0 980 440">
+  <style>text{font-family:Arial,sans-serif;fill:#111}.title{font-size:22px;font-weight:700}.sub{font-size:12px;fill:#555}.grid{stroke:#ddd}.axis{stroke:#555}.enc{fill:#3fb37f}.dec{fill:#5b7cfa}.label{font-size:12px}.value{font-size:11px;font-weight:700}</style>
+  <text class="title" x="80" y="30">ZChain Agave directory benchmark — throughput</text>
+  <text class="sub" x="80" y="48">Encode vs decode MiB/s, observed local development sample</text>
+  <line class="grid" x1="80" y1="350" x2="940" y2="350"/><line class="grid" x1="80" y1="290" x2="940" y2="290"/><line class="grid" x1="80" y1="230" x2="940" y2="230"/><line class="grid" x1="80" y1="170" x2="940" y2="170"/><line class="grid" x1="80" y1="110" x2="940" y2="110"/><line class="grid" x1="80" y1="50" x2="940" y2="50"/>
+  <text class="label" x="70" y="354" text-anchor="end">0</text><text class="label" x="70" y="294" text-anchor="end">0.5</text><text class="label" x="70" y="234" text-anchor="end">1.0</text><text class="label" x="70" y="174" text-anchor="end">1.5</text><text class="label" x="70" y="114" text-anchor="end">2.0</text><text class="label" x="70" y="54" text-anchor="end">2.5</text>
+  <line class="axis" x1="80" y1="50" x2="80" y2="350"/><line class="axis" x1="80" y1="350" x2="940" y2="350"/>
+  <rect class="enc" x="110" y="221.6" width="32" height="128.4" rx="5"/><rect class="dec" x="148" y="297.2" width="32" height="52.8" rx="5"/><text class="label" x="145" y="372" text-anchor="middle">arithmetic</text>
+  <rect class="enc" x="225" y="243.2" width="32" height="106.8" rx="5"/><rect class="dec" x="263" y="315.2" width="32" height="34.8" rx="5"/><text class="label" x="260" y="372" text-anchor="middle">bijection</text>
+  <rect class="enc" x="340" y="224.0" width="32" height="126.0" rx="5"/><rect class="dec" x="378" y="302.0" width="32" height="48.0" rx="5"/><text class="label" x="375" y="372" text-anchor="middle">buffer</text>
+  <rect class="enc" x="455" y="81.2" width="32" height="268.8" rx="5"/><rect class="dec" x="493" y="279.2" width="32" height="70.8" rx="5"/><text class="label" x="490" y="372" text-anchor="middle">codec</text>
+  <rect class="enc" x="570" y="81.2" width="32" height="268.8" rx="5"/><rect class="dec" x="608" y="252.8" width="32" height="97.2" rx="5"/><text class="label" x="605" y="372" text-anchor="middle">main</text>
+  <rect class="enc" x="685" y="231.2" width="32" height="118.8" rx="5"/><rect class="dec" x="723" y="292.4" width="32" height="57.6" rx="5"/><text class="label" x="720" y="372" text-anchor="middle">probability</text>
+  <rect class="enc" x="800" y="180.8" width="32" height="169.2" rx="5"/><rect class="dec" x="838" y="268.4" width="32" height="81.6" rx="5"/><text class="label" x="835" y="372" text-anchor="middle">utils</text>
+  <rect class="enc" x="720" y="18" width="14" height="14" rx="2"/><text class="label" x="740" y="30">Encode</text><rect class="dec" x="805" y="18" width="14" height="14" rx="2"/><text class="label" x="825" y="30">Decode</text>
+  <text class="sub" x="80" y="415">Development measurements; rerun with --release on target hardware before production performance claims.</text>
+</svg>
