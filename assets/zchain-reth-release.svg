@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520">
+  <style>
+    text{font-family:Arial,sans-serif;fill:#111827}
+    .title{font-size:24px;font-weight:700}.sub{font-size:13px;fill:#4b5563}
+    .h{font-size:16px;font-weight:700}.label{font-size:13px}.value{font-size:14px;font-weight:700}
+    .grid{stroke:#e5e7eb;stroke-width:1}.axis{stroke:#6b7280;stroke-width:1}
+    .save{fill:#5b7cfa}.enc{fill:#3fb37f}.dec{fill:#f4a259}
+  </style>
+  <text class="title" x="60" y="34">ZChain × Reth / Ethereum — release benchmark</text>
+  <text class="sub" x="60" y="55">Real Ethereum JSON-RPC payloads · cargo run --release · 10/10 SHA-256 round trips OK</text>
+
+  <text class="h" x="60" y="96">Compression savings</text>
+  <line class="axis" x1="60" y1="330" x2="515" y2="330"/>
+  <line class="axis" x1="60" y1="120" x2="60" y2="330"/>
+  <line class="grid" x1="60" y1="288" x2="515" y2="288"/><text class="label" x="50" y="292" text-anchor="end">20%</text>
+  <line class="grid" x1="60" y1="246" x2="515" y2="246"/><text class="label" x="50" y="250" text-anchor="end">40%</text>
+  <line class="grid" x1="60" y1="204" x2="515" y2="204"/><text class="label" x="50" y="208" text-anchor="end">60%</text>
+  <line class="grid" x1="60" y1="162" x2="515" y2="162"/><text class="label" x="50" y="166" text-anchor="end">80%</text>
+  <line class="grid" x1="60" y1="120" x2="515" y2="120"/><text class="label" x="50" y="124" text-anchor="end">100%</text>
+
+  <rect class="save" x="100" y="180.8" width="90" height="149.2" rx="8"/>
+  <text class="value" x="145" y="170" text-anchor="middle">71.04%</text>
+  <text class="label" x="145" y="352" text-anchor="middle">Blocks</text>
+
+  <rect class="save" x="240" y="144.8" width="90" height="185.2" rx="8"/>
+  <text class="value" x="285" y="134" text-anchor="middle">88.18%</text>
+  <text class="label" x="285" y="352" text-anchor="middle">Receipts</text>
+
+  <rect class="save" x="380" y="160.4" width="90" height="169.6" rx="8"/>
+  <text class="value" x="425" y="150" text-anchor="middle">80.77%</text>
+  <text class="label" x="425" y="352" text-anchor="middle">Aggregate</text>
+
+  <text class="h" x="620" y="96">Effective throughput</text>
+  <text class="sub" x="620" y="114">Derived from total raw bytes / aggregate measured time</text>
+  <line class="axis" x1="620" y1="330" x2="1035" y2="330"/>
+  <line class="axis" x1="620" y1="120" x2="620" y2="330"/>
+  <line class="grid" x1="620" y1="270" x2="1035" y2="270"/><text class="label" x="610" y="274" text-anchor="end">20</text>
+  <line class="grid" x1="620" y1="210" x2="1035" y2="210"/><text class="label" x="610" y="214" text-anchor="end">40</text>
+  <line class="grid" x1="620" y1="150" x2="1035" y2="150"/><text class="label" x="610" y="154" text-anchor="end">60</text>
+
+  <rect class="enc" x="700" y="144.6" width="110" height="185.4" rx="8"/>
+  <text class="value" x="755" y="134" text-anchor="middle">61.8 MiB/s</text>
+  <text class="label" x="755" y="352" text-anchor="middle">Encode</text>
+
+  <rect class="dec" x="860" y="187.8" width="110" height="142.2" rx="8"/>
+  <text class="value" x="915" y="177" text-anchor="middle">47.4 MiB/s</text>
+  <text class="label" x="915" y="352" text-anchor="middle">Decode</text>
+
+  <rect x="60" y="400" width="975" height="72" rx="10" fill="#f3f4f6"/>
+  <text class="label" x="82" y="426">Scope: five full block JSON responses + five matching receipts responses; 2,908,507 raw bytes total.</text>
+  <text class="label" x="82" y="449">These throughput figures are specific to this release-mode Reth/Ethereum dataset and are not universal ZChain guarantees.</text>
+</svg>
