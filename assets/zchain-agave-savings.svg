@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="430" viewBox="0 0 960 430">
+  <style>text{font-family:Arial,sans-serif;fill:#111}.title{font-size:22px;font-weight:700}.sub{font-size:12px;fill:#555}.grid{stroke:#ddd}.axis{stroke:#555}.bar{fill:#5b7cfa}.label{font-size:12px}.value{font-size:12px;font-weight:700}</style>
+  <text class="title" x="78" y="30">ZChain Agave directory benchmark — savings</text>
+  <text class="sub" x="78" y="48">Observed local development sample, 2026-08-15</text>
+  <line class="grid" x1="78" y1="350" x2="920" y2="350"/><line class="grid" x1="78" y1="275" x2="920" y2="275"/><line class="grid" x1="78" y1="200" x2="920" y2="200"/><line class="grid" x1="78" y1="125" x2="920" y2="125"/><line class="grid" x1="78" y1="50" x2="920" y2="50"/>
+  <text class="label" x="68" y="354" text-anchor="end">0%</text><text class="label" x="68" y="279" text-anchor="end">20%</text><text class="label" x="68" y="204" text-anchor="end">40%</text><text class="label" x="68" y="129" text-anchor="end">60%</text><text class="label" x="68" y="54" text-anchor="end">80%</text>
+  <line class="axis" x1="78" y1="50" x2="78" y2="350"/><line class="axis" x1="78" y1="350" x2="920" y2="350"/>
+  <rect class="bar" x="105" y="112.8" width="75" height="237.2" rx="6"/><text class="value" x="142.5" y="104" text-anchor="middle">63.26%</text><text class="label" x="142.5" y="372" text-anchor="middle">arithmetic</text>
+  <rect class="bar" x="220" y="101.5" width="75" height="248.5" rx="6"/><text class="value" x="257.5" y="93" text-anchor="middle">66.39%</text><text class="label" x="257.5" y="372" text-anchor="middle">bijection</text>
+  <rect class="bar" x="335" y="128.5" width="75" height="221.5" rx="6"/><text class="value" x="372.5" y="120" text-anchor="middle">59.06%</text><text class="label" x="372.5" y="372" text-anchor="middle">buffer</text>
+  <rect class="bar" x="450" y="79.9" width="75" height="270.1" rx="6"/><text class="value" x="487.5" y="71" text-anchor="middle">72.03%</text><text class="label" x="487.5" y="372" text-anchor="middle">codec</text>
+  <rect class="bar" x="565" y="115.5" width="75" height="234.5" rx="6"/><text class="value" x="602.5" y="107" text-anchor="middle">62.53%</text><text class="label" x="602.5" y="372" text-anchor="middle">main</text>
+  <rect class="bar" x="680" y="166.0" width="75" height="184.0" rx="6"/><text class="value" x="717.5" y="158" text-anchor="middle">49.07%</text><text class="label" x="717.5" y="372" text-anchor="middle">probability</text>
+  <rect class="bar" x="795" y="164.0" width="75" height="186.0" rx="6"/><text class="value" x="832.5" y="156" text-anchor="middle">49.60%</text><text class="label" x="832.5" y="372" text-anchor="middle">utils</text>
+  <text class="sub" x="78" y="410">All listed rows reported successful round trip. Development measurements; not --release target-hardware results.</text>
+</svg>
