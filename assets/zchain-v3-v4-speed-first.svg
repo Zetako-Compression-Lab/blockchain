@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520">
+<style>text{font-family:Arial,sans-serif;fill:#111}.title{font-size:24px;font-weight:700}.sub{font-size:13px;fill:#555}.axis{stroke:#555;stroke-width:1}.grid{stroke:#ddd;stroke-width:1}.v3{fill:#8a8a8a}.v4{fill:#5b7cfa}.speed{fill:#3fb37f}.label{font-size:13px}.value{font-size:13px;font-weight:700}.small{font-size:12px;fill:#555}</style>
+<text class="title" x="80" y="34">ZChain profile evolution — same public blockchain corpus</text>
+<text class="sub" x="80" y="55">64 files · 30,017,805 raw bytes · Apple M4 · release C benchmark</text>
+<line class="grid" x1="100" y1="380" x2="1020" y2="380"/><line class="grid" x1="100" y1="300" x2="1020" y2="300"/><line class="grid" x1="100" y1="220" x2="1020" y2="220"/><line class="grid" x1="100" y1="140" x2="1020" y2="140"/><line class="grid" x1="100" y1="60" x2="1020" y2="60"/>
+<text class="label" x="90" y="384" text-anchor="end">0</text><text class="label" x="90" y="304" text-anchor="end">40</text><text class="label" x="90" y="224" text-anchor="end">80</text><text class="label" x="90" y="144" text-anchor="end">120</text><text class="label" x="90" y="64" text-anchor="end">160 MiB/s</text>
+<line class="axis" x1="100" y1="60" x2="100" y2="380"/><line class="axis" x1="100" y1="380" x2="1020" y2="380"/>
+<rect class="v3" x="200" y="231.46" width="90" height="148.54" rx="8"/><text class="value" x="245" y="220" text-anchor="middle">74.27</text><text class="label" x="245" y="405" text-anchor="middle">v3 encode</text>
+<rect class="v4" x="355" y="153.28" width="90" height="226.72" rx="8"/><text class="value" x="400" y="142" text-anchor="middle">113.36</text><text class="label" x="400" y="405" text-anchor="middle">v4 encode</text>
+<rect class="speed" x="510" y="126.94" width="90" height="253.06" rx="8"/><text class="value" x="555" y="116" text-anchor="middle">126.53</text><text class="label" x="555" y="405" text-anchor="middle">Speed encode</text>
+<rect class="v3" x="700" y="244.08" width="90" height="135.92" rx="8"/><text class="value" x="745" y="233" text-anchor="middle">67.96</text><text class="label" x="745" y="405" text-anchor="middle">v3 decode</text>
+<rect class="v4" x="825" y="242.92" width="90" height="137.08" rx="8"/><text class="value" x="870" y="232" text-anchor="middle">68.54</text><text class="label" x="870" y="405" text-anchor="middle">v4 decode</text>
+<rect class="speed" x="950" y="230.66" width="70" height="149.34" rx="8"/><text class="value" x="985" y="220" text-anchor="middle">74.67</text><text class="label" x="985" y="405" text-anchor="middle">Speed decode</text>
+<text class="small" x="200" y="460">v4: same compressed bytes as v3 on this corpus, 1.53× faster encode.</text>
+<text class="small" x="200" y="482">Speed_First: 1.12× faster encode vs v4, 1.09× faster decode, +1.79% aggregate compressed size.</text>
+</svg>
