@@ -130,9 +130,9 @@ Public benchmark pages follow the same rules:
 
 ## ZChain vs established codecs
 
-ZChain is compared against **gzip, Zstd, Brotli and LZMA2** on the same documented payloads and presets.
+ZChain is compared against selected established codecs — currently **gzip, Brotli and LZMA2** — on the same documented payloads and named presets.
 
-The comparison is deliberately scoped. Zstd is the throughput leader on several tested workloads; ZChain's interest is where blockchain-specific structure can provide a different density / CPU tradeoff.
+The comparison focuses on the tradeoff that matters for blockchain infrastructure: **compressed bytes versus encode/decode cost**.
 
 [Open the codec comparison →](docs/COMPRESSION_COMPARISON.md)
 

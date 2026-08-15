@@ -86,7 +86,7 @@ Speed
 new negotiated blockchain model
 ```
 
-For general-codec comparison, use the same input with named presets for gzip, Zstd, Brotli, LZMA2 or other codecs.
+For established-codec comparison, use the same input with named presets for the codecs included in the public comparison set.
 
 ## Schema-assisted benchmark rule
 
