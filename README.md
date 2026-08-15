@@ -6,7 +6,7 @@ ZChain is Zetako's proprietary compression technology for structured blockchain 
 
 The current public focus is an **Agave integration prototype** with fail-open behavior, SHA-256 round-trip verification, file/directory benchmark tooling, and an optional shred shadow probe that can measure compression without changing the wire format.
 
-> **Current status:** validated development integration and reproducible local benchmarks. Not production-ready yet.
+> **Current status:** validated development integration and reproducible local compression benchmarks. Performance figures are intentionally withheld until release-mode benchmarks are rerun on representative hardware.
 
 ---
 
@@ -21,7 +21,7 @@ The current Agave-facing integration includes:
 - `tools/zchain-bench-dir` — directory benchmark with CSV output
 - `ledger/src/zc_shadow.rs` — optional shadow probe for shred payload measurements without changing network behavior
 
-The benchmark layer records raw/compressed size, ratio, savings, encode/decode timing, MiB/s throughput, SHA-256 integrity, and configurable buffer behavior.
+The benchmark layer records raw/compressed size, ratio, savings, encode/decode timing, throughput, SHA-256 integrity, and configurable buffer behavior. **Development-build timing and throughput values are not published here because they are not representative of release performance.**
 
 ---
 
@@ -29,11 +29,11 @@ The benchmark layer records raw/compressed size, ratio, savings, encode/decode t
 
 Observed locally on **2026-08-15**:
 
-| Input | Raw bytes | ZChain bytes | Ratio | Savings | Encode | Decode | Integrity |
-|---|---:|---:|---:|---:|---:|---:|---|
-| `ZChain_Benchmark_Report.md` | 6,000 | 2,887 | 0.4812 | **51.88%** | 4.712 ms | 4.635 ms | **SHA-256 OK** |
+| Input | Raw bytes | ZChain bytes | Ratio | Savings | Integrity |
+|---|---:|---:|---:|---:|---|
+| `ZChain_Benchmark_Report.md` | 6,000 | 2,887 | 0.4812 | **51.88%** | **SHA-256 OK** |
 
-These are **development measurements**, not tuned `--release` numbers and not validator-production claims.
+These are development integration measurements. Performance claims will be published only after `--release` reruns on representative target hardware.
 
 ---
 
@@ -41,17 +41,15 @@ These are **development measurements**, not tuned `--release` numbers and not va
 
 ![ZChain directory savings](assets/zchain-agave-savings.svg)
 
-| File | Savings | Encode MiB/s | Decode MiB/s | Round trip |
-|---|---:|---:|---:|---|
-| `arithmetic.rs` | 63.26% | 1.07 | 0.44 | OK |
-| `bijection.rs` | 66.39% | 0.89 | 0.29 | OK |
-| `buffer.rs` | 59.06% | 1.05 | 0.40 | OK |
-| `codec.rs` | 72.03% | 2.24 | 0.59 | OK |
-| `main.rs` | 62.53% | 2.24 | 0.81 | OK |
-| `probability.rs` | 49.07% | 0.99 | 0.48 | OK |
-| `utils.rs` | 49.60% | 1.41 | 0.68 | OK |
-
-![ZChain directory throughput](assets/zchain-agave-throughput.svg)
+| File | Raw bytes | ZChain bytes | Ratio | Savings | Round trip |
+|---|---:|---:|---:|---:|---|
+| `arithmetic.rs` | 3,639 | 1,337 | 0.3674 | 63.26% | OK |
+| `bijection.rs` | 1,830 | 615 | 0.3361 | 66.39% | OK |
+| `buffer.rs` | 2,389 | 978 | 0.4094 | 59.06% | OK |
+| `codec.rs` | 6,356 | 1,778 | 0.2797 | 72.03% | OK |
+| `main.rs` | 8,372 | 3,137 | 0.3747 | 62.53% | OK |
+| `probability.rs` | 1,887 | 961 | 0.5093 | 49.07% | OK |
+| `utils.rs` | 3,339 | 1,683 | 0.5040 | 49.60% | OK |
 
 ---
 
@@ -90,7 +88,7 @@ Measure raw-vs-ZChain behavior on ledger shred payloads without changing network
 Compare compressed payload size against raw payload size before enabling any write path.
 
 ### Validator artifacts
-Run the directory benchmark against captured validator logs, JSON, or other structured artifacts and publish CSV metrics for savings, throughput, and round-trip status.
+Run the directory benchmark against captured validator logs, JSON, or other structured artifacts and publish CSV metrics for savings and round-trip status. Release-mode performance metrics will be added separately after validation.
 
 ---
 
@@ -105,6 +103,8 @@ cd agave
 ./cargo run -p zchain-bench --features zchainv3 -- ../ZChain_Benchmark_Report.md
 ./cargo run -p zchain-bench-dir --features zchainv3 -- ../zchainv3-rs-full/src /tmp/zchain-src-bench.csv
 ```
+
+For performance work, the next public benchmark pass will use `--release` and representative validator hardware.
 
 See [docs/zchain-agave-benchmarks.md](docs/zchain-agave-benchmarks.md) for the full benchmark note.
 
@@ -139,7 +139,7 @@ The current port still emits `unused_imports` and `static_mut_refs` warnings. Th
 **Public here**
 
 - benchmark methodology
-- benchmark results
+- verified compression results
 - integration architecture
 - technical claims that can be externally reviewed
 
