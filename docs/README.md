@@ -1,51 +1,45 @@
-# ZChain Public Documentation
+# ZChain Blockchain Documentation
 
-This directory is organized as the public technical documentation for ZChain.
+[← Main product page](../README.md)
+
+This directory is organized as a public engineering and product map rather than as a chronological dump of experiments.
 
 ## Start here
 
-- [Product evolution: v3 → v4 → Speed_First](../README.md)
-- [Full v3 / v4 / Speed_First benchmark report](ZCHAIN_V3_V4_SPEED_FIRST_C_REAL_BENCH_REPORT.md)
-- [Public claims and measurement boundaries](PUBLIC_CLAIMS.md)
+- [Ethereum / Reth](ETHEREUM.md)
+- [EVM L2 / EVM-compatible chains](EVM_L2.md)
+- [Solana](SOLANA.md)
+- [Agave validator integration](AGAVE.md)
+- [Cosmos / CometBFT](COSMOS_COMETBFT.md)
+- [Bitcoin](BITCOIN.md)
+- [Model matrix](MODEL_MATRIX.md)
+- [Benchmark methodology](METHODOLOGY.md)
+- [ZChain vs established codecs](COMPRESSION_COMPARISON.md)
 
-## Blockchain pages
+## Adapter-ready chain pages
 
-### Ethereum / Reth
+- [Polkadot / Substrate](SUBSTRATE.md)
+- [Cardano](CARDANO.md)
+- [Sui](SUI.md)
+- [Aptos](APTOS.md)
+- [TRON](TRON.md)
 
-[Open Ethereum / Reth benchmarks](zchain-reth-benchmarks.md)
+These pages deliberately distinguish **measured results** from **integration models whose chain-specific benchmarks are still pending**.
 
-Covers full block JSON and receipts, release benchmark methodology, SHA-256 round-trip validation, measured savings, performance, why Ethereum execution-layer payloads are interesting for compression, and future RLP/storage/network experiments.
+## Detailed engineering evidence
 
-### Solana mainnet
+The older detailed reports remain available because they show how the product evolved and preserve reproducible evidence:
 
-[Open Solana mainnet benchmarks](SOLANA_MAINNET_BENCHMARKS.md)
+- [v3 vs v4 compatibility report](ZCHAIN_V3_VS_V4_C_REAL_BENCH_REPORT.md)
+- [v3 → v4 → Speed report](ZCHAIN_V3_V4_SPEED_FIRST_C_REAL_BENCH_REPORT.md)
+- [native C benchmark report](ZCHAIN_C_REAL_BENCH_REPORT.md)
+- [historical Ethereum / Reth benchmark evidence](zchain-reth-benchmarks.md)
+- [historical Solana mainnet benchmark evidence](SOLANA_MAINNET_BENCHMARKS.md)
+- [historical Agave integration evidence](AGAVE_INTEGRATION.md)
+- [historical Agave benchmark notes](zchain-agave-benchmarks.md)
+- [historical CometBFT / Cosmos evidence](COMETBFT_COSMOS_BENCHMARKS.md)
+- [public claim boundaries](PUBLIC_CLAIMS.md)
 
-Covers `getBlock`, signatures, commitments, block production and transaction payloads, with v3/v4/Speed_First results and the practical value of reducing large Solana RPC responses.
+## Reading rule
 
-### Agave
-
-[Open Agave integration](AGAVE_INTEGRATION.md)
-
-Covers the validator-facing integration architecture, fail-open design, benchmark tooling, shred shadow probe, measurement boundaries and what must be validated before a production transport/storage path.
-
-### Cosmos / CometBFT
-
-[Open CometBFT / Cosmos benchmarks](COMETBFT_COSMOS_BENCHMARKS.md)
-
-Covers block, block results, commits, validators and consensus parameters from Cosmos Hub RPC data.
-
-## Codec comparisons
-
-[Open selected compression comparison](COMPRESSION_COMPARISON.md)
-
-Workload-specific comparison of ZChain against gzip, Brotli and LZMA2/7zip using stated presets and payloads.
-
-## Benchmark methodology
-
-- [Native C benchmark report](ZCHAIN_C_REAL_BENCH_REPORT.md)
-- [v3 vs v4 compatibility comparison](ZCHAIN_V3_VS_V4_C_REAL_BENCH_REPORT.md)
-- [v3 vs v4 vs Speed_First](ZCHAIN_V3_V4_SPEED_FIRST_C_REAL_BENCH_REPORT.md)
-
-## Reading the results correctly
-
-ZChain reports native codec performance separately from integration-harness performance. Numbers are scoped to their dataset, hardware, build flags and profile. A compression saving observed on RPC or benchmark data is not automatically claimed as an equivalent production network or storage saving without a separately validated integration path.
+The short ecosystem pages explain **what ZChain is trying to do and what has been proven**. The detailed reports provide the underlying benchmark history. If a short page and an older report describe different generations, the generation/profile name should always be quoted with the number.

@@ -1,17 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520">
-<style>text{font-family:Arial,sans-serif;fill:#111}.title{font-size:24px;font-weight:700}.sub{font-size:13px;fill:#555}.grid{stroke:#ddd;stroke-width:1}.axis{stroke:#555}.z{fill:#3fb37f}.other{fill:#8a8a8a}.label{font-size:12px}.value{font-size:12px;font-weight:700}.small{font-size:11px;fill:#555}</style>
-<text class="title" x="70" y="32">Ethereum receipts — 1 MiB: compressed size vs encode speed</text>
-<text class="sub" x="70" y="52">Selected comparison: ZChain Speed_First, gzip, Brotli, LZMA2/7zip</text>
-<text class="small" x="70" y="82">Bars show final size in KB (lower is better); labels below show encode MiB/s.</text>
-<line class="grid" x1="90" y1="390" x2="1040" y2="390"/><line class="grid" x1="90" y1="310" x2="1040" y2="310"/><line class="grid" x1="90" y1="230" x2="1040" y2="230"/><line class="grid" x1="90" y1="150" x2="1040" y2="150"/><line class="grid" x1="90" y1="70" x2="1040" y2="70"/>
-<text class="label" x="80" y="394" text-anchor="end">0 KB</text><text class="label" x="80" y="314" text-anchor="end">20</text><text class="label" x="80" y="234" text-anchor="end">40</text><text class="label" x="80" y="154" text-anchor="end">60</text><text class="label" x="80" y="74" text-anchor="end">80</text>
-<line class="axis" x1="90" y1="70" x2="90" y2="390"/><line class="axis" x1="90" y1="390" x2="1040" y2="390"/>
-<rect class="z" x="130" y="216.7" width="90" height="173.3" rx="7"/><text class="value" x="175" y="207" text-anchor="middle">43.3 KB</text><text class="label" x="175" y="414" text-anchor="middle">ZChain Speed</text><text class="small" x="175" y="435" text-anchor="middle">170 MiB/s</text>
-<rect class="other" x="260" y="92.7" width="90" height="297.3" rx="7"/><text class="value" x="305" y="83" text-anchor="middle">74.3 KB</text><text class="label" x="305" y="414" text-anchor="middle">gzip-1</text><text class="small" x="305" y="435" text-anchor="middle">446 MiB/s</text>
-<rect class="other" x="390" y="144.0" width="90" height="246.0" rx="7"/><text class="value" x="435" y="134" text-anchor="middle">61.5 KB</text><text class="label" x="435" y="414" text-anchor="middle">gzip-6</text><text class="small" x="435" y="435" text-anchor="middle">185 MiB/s</text>
-<rect class="other" x="520" y="204.1" width="90" height="185.9" rx="7"/><text class="value" x="565" y="194" text-anchor="middle">46.5 KB</text><text class="label" x="565" y="414" text-anchor="middle">Brotli q1</text><text class="small" x="565" y="435" text-anchor="middle">1279 MiB/s</text>
-<rect class="other" x="650" y="220.9" width="90" height="169.1" rx="7"/><text class="value" x="695" y="211" text-anchor="middle">42.3 KB</text><text class="label" x="695" y="414" text-anchor="middle">Brotli q5</text><text class="small" x="695" y="435" text-anchor="middle">159 MiB/s</text>
-<rect class="other" x="780" y="270.6" width="90" height="119.4" rx="7"/><text class="value" x="825" y="261" text-anchor="middle">29.8 KB</text><text class="label" x="825" y="414" text-anchor="middle">LZMA2 p1</text><text class="small" x="825" y="435" text-anchor="middle">101 MiB/s</text>
-<rect class="other" x="910" y="214.5" width="90" height="175.5" rx="7"/><text class="value" x="955" y="205" text-anchor="middle">43.9 KB</text><text class="label" x="955" y="414" text-anchor="middle">LZMA2 p5</text><text class="small" x="955" y="435" text-anchor="middle">12.6 MiB/s</text>
-<text class="small" x="70" y="485">Workload-specific benchmark. Lower final size is better; throughput is reported separately and should not be generalized to other payloads.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="720" viewBox="0 0 1400 720">
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#111827}
+.title{font-size:34px;font-weight:700}
+.sub{font-size:20px;fill:#4b5563}
+.axisLabel{font-size:18px;fill:#374151}
+.codec{font-size:19px;font-weight:700}
+.value{font-size:20px;font-weight:700}
+.speed{font-size:17px;fill:#4b5563}
+.note{font-size:18px;fill:#374151}
+.grid{stroke:#e5e7eb;stroke-width:2}
+.axis{stroke:#6b7280;stroke-width:2}
+.zchain{fill:#111827}
+.other{fill:#9ca3af}
+</style>
+<text class="title" x="70" y="55">Ethereum receipts — 1 MiB: final compressed size</text>
+<text class="sub" x="70" y="88">Same native single-thread comparison harness · lower bar is better · encode throughput shown below each codec</text>
+
+<line class="grid" x1="110" y1="520" x2="1330" y2="520"/>
+<line class="grid" x1="110" y1="400" x2="1330" y2="400"/>
+<line class="grid" x1="110" y1="280" x2="1330" y2="280"/>
+<line class="grid" x1="110" y1="160" x2="1330" y2="160"/>
+<line class="axis" x1="110" y1="135" x2="110" y2="520"/>
+<line class="axis" x1="110" y1="520" x2="1330" y2="520"/>
+<text class="axisLabel" x="95" y="526" text-anchor="end">0 KB</text>
+<text class="axisLabel" x="95" y="406" text-anchor="end">20</text>
+<text class="axisLabel" x="95" y="286" text-anchor="end">40</text>
+<text class="axisLabel" x="95" y="166" text-anchor="end">60</text>
+
+<rect class="zchain" x="175" y="260.1" width="150" height="259.9" rx="10"/>
+<text class="value" x="250" y="246" text-anchor="middle">43.3 KB</text>
+<text class="codec" x="250" y="555" text-anchor="middle">ZChain Speed</text>
+<text class="speed" x="250" y="582" text-anchor="middle">170 MiB/s encode</text>
+
+<rect class="other" x="405" y="151.1" width="150" height="368.9" rx="10"/>
+<text class="value" x="480" y="137" text-anchor="middle">61.5 KB</text>
+<text class="codec" x="480" y="555" text-anchor="middle">gzip-6</text>
+<text class="speed" x="480" y="582" text-anchor="middle">185 MiB/s encode</text>
+
+<rect class="other" x="635" y="257.2" width="150" height="262.8" rx="10"/>
+<text class="value" x="710" y="243" text-anchor="middle">43.8 KB</text>
+<text class="codec" x="710" y="555" text-anchor="middle">Zstd-1</text>
+<text class="speed" x="710" y="582" text-anchor="middle">1,875 MiB/s encode</text>
+
+<rect class="other" x="865" y="266.2" width="150" height="253.8" rx="10"/>
+<text class="value" x="940" y="252" text-anchor="middle">42.3 KB</text>
+<text class="codec" x="940" y="555" text-anchor="middle">Brotli q5</text>
+<text class="speed" x="940" y="582" text-anchor="middle">159 MiB/s encode</text>
+
+<rect class="other" x="1095" y="341.0" width="150" height="179.0" rx="10"/>
+<text class="value" x="1170" y="327" text-anchor="middle">29.8 KB</text>
+<text class="codec" x="1170" y="555" text-anchor="middle">LZMA2 p1</text>
+<text class="speed" x="1170" y="582" text-anchor="middle">101 MiB/s encode</text>
+
+<text class="note" x="70" y="650">Zstd-1 is the throughput reference here: nearly the same compressed size as ZChain, but much higher encode/decode throughput.</text>
+<text class="note" x="70" y="680">The chart shows density; throughput remains a separate axis and must not be inferred from bar height.</text>
 </svg>

@@ -1,16 +1,86 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520">
-<style>text{font-family:Arial,sans-serif;fill:#111}.title{font-size:24px;font-weight:700}.sub{font-size:13px;fill:#555}.axis{stroke:#555;stroke-width:1}.grid{stroke:#ddd;stroke-width:1}.v3{fill:#8a8a8a}.v4{fill:#5b7cfa}.speed{fill:#3fb37f}.label{font-size:13px}.value{font-size:13px;font-weight:700}.small{font-size:12px;fill:#555}</style>
-<text class="title" x="80" y="34">ZChain profile evolution — same public blockchain corpus</text>
-<text class="sub" x="80" y="55">64 files · 30,017,805 raw bytes · Apple M4 · release C benchmark</text>
-<line class="grid" x1="100" y1="380" x2="1020" y2="380"/><line class="grid" x1="100" y1="300" x2="1020" y2="300"/><line class="grid" x1="100" y1="220" x2="1020" y2="220"/><line class="grid" x1="100" y1="140" x2="1020" y2="140"/><line class="grid" x1="100" y1="60" x2="1020" y2="60"/>
-<text class="label" x="90" y="384" text-anchor="end">0</text><text class="label" x="90" y="304" text-anchor="end">40</text><text class="label" x="90" y="224" text-anchor="end">80</text><text class="label" x="90" y="144" text-anchor="end">120</text><text class="label" x="90" y="64" text-anchor="end">160 MiB/s</text>
-<line class="axis" x1="100" y1="60" x2="100" y2="380"/><line class="axis" x1="100" y1="380" x2="1020" y2="380"/>
-<rect class="v3" x="200" y="231.46" width="90" height="148.54" rx="8"/><text class="value" x="245" y="220" text-anchor="middle">74.27</text><text class="label" x="245" y="405" text-anchor="middle">v3 encode</text>
-<rect class="v4" x="355" y="153.28" width="90" height="226.72" rx="8"/><text class="value" x="400" y="142" text-anchor="middle">113.36</text><text class="label" x="400" y="405" text-anchor="middle">v4 encode</text>
-<rect class="speed" x="510" y="126.94" width="90" height="253.06" rx="8"/><text class="value" x="555" y="116" text-anchor="middle">126.53</text><text class="label" x="555" y="405" text-anchor="middle">Speed encode</text>
-<rect class="v3" x="700" y="244.08" width="90" height="135.92" rx="8"/><text class="value" x="745" y="233" text-anchor="middle">67.96</text><text class="label" x="745" y="405" text-anchor="middle">v3 decode</text>
-<rect class="v4" x="825" y="242.92" width="90" height="137.08" rx="8"/><text class="value" x="870" y="232" text-anchor="middle">68.54</text><text class="label" x="870" y="405" text-anchor="middle">v4 decode</text>
-<rect class="speed" x="950" y="230.66" width="70" height="149.34" rx="8"/><text class="value" x="985" y="220" text-anchor="middle">74.67</text><text class="label" x="985" y="405" text-anchor="middle">Speed decode</text>
-<text class="small" x="200" y="460">v4: same compressed bytes as v3 on this corpus, 1.53× faster encode.</text>
-<text class="small" x="200" y="482">Speed_First: 1.12× faster encode vs v4, 1.09× faster decode, +1.79% aggregate compressed size.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="780" viewBox="0 0 1500 780">
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#111827}
+.title{font-size:36px;font-weight:700}
+.subtitle{font-size:20px;fill:#4b5563}
+.gen{font-size:24px;font-weight:700}
+.name{font-size:18px;font-weight:700}
+.body{font-size:17px;fill:#374151}
+.metric{font-size:19px;font-weight:700}
+.arrow{stroke:#9ca3af;stroke-width:4;fill:none}
+.card{fill:#ffffff;stroke:#d1d5db;stroke-width:2}
+.cardCurrent{fill:#f3f4f6;stroke:#111827;stroke-width:3}
+.badge{fill:#111827}
+.badgeText{font-size:16px;font-weight:700;fill:#ffffff}
+</style>
+<text class="title" x="70" y="58">ZChain product evolution — six public generations</text>
+<text class="subtitle" x="70" y="90">From a context-adaptive codec to a negotiated blockchain compression engine</text>
+
+<path class="arrow" d="M270 365 H330 M500 365 H560 M730 365 H790 M960 365 H1020 M1190 365 H1250"/>
+
+<rect class="card" x="50" y="170" width="220" height="390" rx="18"/>
+<text class="gen" x="75" y="215">ZChain 3</text>
+<text class="name" x="75" y="248">Foundation</text>
+<text class="body" x="75" y="295">Original context-adaptive</text>
+<text class="body" x="75" y="321">lossless codec.</text>
+<text class="metric" x="75" y="385">74.27 MiB/s encode</text>
+<text class="metric" x="75" y="415">67.96 MiB/s decode</text>
+<text class="body" x="75" y="468">Public compatibility</text>
+<text class="body" x="75" y="494">baseline.</text>
+
+<rect class="card" x="280" y="170" width="220" height="390" rx="18"/>
+<text class="gen" x="305" y="215">ZChain 4</text>
+<text class="name" x="305" y="248">Fast Compatible</text>
+<text class="body" x="305" y="295">Hot-path C optimization.</text>
+<text class="body" x="305" y="321">Same tested v3 bytes.</text>
+<text class="metric" x="305" y="385">113.36 MiB/s encode</text>
+<text class="metric" x="305" y="415">1.53× vs v3</text>
+<text class="body" x="305" y="468">Compatibility preserved</text>
+<text class="body" x="305" y="494">on public corpus.</text>
+
+<rect class="card" x="510" y="170" width="220" height="390" rx="18"/>
+<text class="gen" x="535" y="215">ZChain 5</text>
+<text class="name" x="535" y="248">Speed</text>
+<text class="body" x="535" y="295">New speed-oriented stream.</text>
+<text class="body" x="535" y="321">Lighter model + RAW bypass.</text>
+<text class="metric" x="535" y="385">126.53 MiB/s encode</text>
+<text class="metric" x="535" y="415">74.67 MiB/s decode</text>
+<text class="body" x="535" y="468">Throughput-first profile.</text>
+
+<rect class="card" x="740" y="170" width="220" height="390" rx="18"/>
+<text class="gen" x="765" y="215">ZChain 6</text>
+<text class="name" x="765" y="248">Blockchain</text>
+<text class="body" x="765" y="295">First blockchain-specific</text>
+<text class="body" x="765" y="321">routing and Ethereum hex</text>
+<text class="body" x="765" y="347">specialization.</text>
+<text class="metric" x="765" y="405">Structure ≠ crypto</text>
+<text class="body" x="765" y="468">Established the need for</text>
+<text class="body" x="765" y="494">negotiated payload models.</text>
+
+<rect class="card" x="970" y="170" width="220" height="390" rx="18"/>
+<text class="gen" x="995" y="215">ZChain 7</text>
+<text class="name" x="995" y="248">Schema</text>
+<text class="body" x="995" y="295">Runtime-assisted model:</text>
+<text class="body" x="995" y="325">STRUCTURAL</text>
+<text class="body" x="995" y="351">OPAQUE</text>
+<text class="body" x="995" y="377">REFERENCES</text>
+<text class="metric" x="995" y="430">No global scan</text>
+<text class="body" x="995" y="480">Research architecture</text>
+<text class="body" x="995" y="506">validated in microbenches.</text>
+
+<rect class="cardCurrent" x="1200" y="150" width="250" height="430" rx="18"/>
+<rect class="badge" x="1225" y="175" width="104" height="30" rx="15"/>
+<text class="badgeText" x="1277" y="196" text-anchor="middle">CURRENT</text>
+<text class="gen" x="1225" y="245">ZChain 8</text>
+<text class="name" x="1225" y="278">Blockchain Engine</text>
+<text class="body" x="1225" y="325">Negotiated models.</text>
+<text class="body" x="1225" y="351">Stable C ABI + ZCB1.</text>
+<text class="body" x="1225" y="377">CMake / pkg-config / install.</text>
+<text class="body" x="1225" y="403">Multi-chain registry.</text>
+<text class="metric" x="1225" y="458">Ethereum hex:</text>
+<text class="metric" x="1225" y="487">146.12 MiB/s encode</text>
+<text class="metric" x="1225" y="516">129.41 MiB/s decode</text>
+
+<text class="subtitle" x="70" y="650">Public naming tracks product generations; historical engineering names remain preserved in detailed reports for traceability.</text>
+<text class="subtitle" x="70" y="690">Performance figures are workload-specific. Schema microbenchmarks are research evidence, not production client throughput claims.</text>
 </svg>
