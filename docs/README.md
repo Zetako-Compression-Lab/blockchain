@@ -16,11 +16,17 @@ This directory is organized as a public engineering and product map rather than 
 - [Benchmark methodology](METHODOLOGY.md)
 - [ZChain vs established codecs](COMPRESSION_COMPARISON.md)
 
-## Latest reference benchmark
+## Latest native Ethereum milestone
+
+- [ZChain 8 `ETHEREUM_SCHEMA` — direct Alloy/Reth supported benchmark](ZCHAIN_8_ETHEREUM_SCHEMA_DIRECT_ALLOY_SUPPORTED_REPORT.md)
+
+This report documents the supported native RLP path: 24 real Ethereum blocks, 5,246 native Alloy transactions, direct `zchain_bc_stream_*` integration, and separate `codec_only` versus `serializer_to_frame` measurements.
+
+## Multi-chain reference benchmark
 
 - [ZChain Blockchain C 1.2.0 Research — Apple M4 benchmark report](ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
 
-This is the current reference run for the supported/public corpus summaries. It includes Ethereum Reth JSON, Solana mainnet RPC JSON, CometBFT CosmosHub RPC JSON and an Agave ledger-source corpus, plus the `ETHEREUM_SCHEMA` smoke status.
+This report remains the current reference snapshot for Ethereum Reth JSON, Solana mainnet RPC JSON, CometBFT CosmosHub RPC JSON and an Agave ledger-source corpus.
 
 ## Adapter-ready chain pages
 
@@ -48,4 +54,4 @@ The older detailed reports remain available because they show how the product ev
 
 ## Reading rule
 
-The short ecosystem pages explain **what ZChain is trying to do and what has been proven**. The latest reference report provides the current benchmark snapshot, while the older detailed reports preserve the evolution. If two reports describe different generations, always quote the generation/profile name with the number.
+The short ecosystem pages explain **what ZChain is trying to do and what has been proven**. Supported native model reports provide the current serializer-specific evidence, while older detailed reports preserve the evolution. If two reports describe different generations or integration boundaries, always quote the generation/profile name and measurement boundary.

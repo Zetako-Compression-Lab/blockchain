@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640">
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#111827}.title{font-size:34px;font-weight:700}.sub{font-size:20px;fill:#4b5563}.label{font-size:20px;font-weight:700}.metric{font-size:18px;fill:#374151}.value{font-size:20px;font-weight:700}.axis{stroke:#9ca3af;stroke-width:1.5}.grid{stroke:#e5e7eb;stroke-width:1}.base{fill:#9ca3af}.speed{fill:#6b7280}.schema{fill:#2563eb}.callout{font-size:18px;font-weight:700;fill:#1d4ed8}.foot{font-size:18px;fill:#4b5563}</style>
+<text class="title" x="70" y="50">Ethereum native RLP — ZChain 8 Schema vs prior generations</text>
+<text class="sub" x="70" y="82">24 real blocks · 5,246 Alloy transactions · 2,959,206 RLP bytes · Apple M4 · release/O3</text>
+
+<text class="label" x="70" y="140">Encode throughput</text>
+<text class="metric" x="70" y="168">MiB/s — higher is better</text>
+<line class="grid" x1="280" y1="205" x2="1080" y2="205"/>
+<line class="grid" x1="280" y1="275" x2="1080" y2="275"/>
+<line class="grid" x1="280" y1="345" x2="1080" y2="345"/>
+<text class="label" x="70" y="211">ZChain 4</text><rect class="base" x="280" y="185" width="530" height="38" rx="7"/><text class="value" x="825" y="211">79.50</text>
+<text class="label" x="70" y="281">ZChain 5 Speed</text><rect class="speed" x="280" y="255" width="608" height="38" rx="7"/><text class="value" x="903" y="281">91.24</text>
+<text class="label" x="70" y="351">ZChain 8 Schema</text><rect class="schema" x="280" y="325" width="722" height="38" rx="7"/><text class="value" x="1017" y="351">108.24</text>
+<text class="callout" x="830" y="392">+18.6% encode vs ZChain 5</text>
+
+<text class="label" x="70" y="445">Decode throughput</text>
+<text class="metric" x="70" y="473">MiB/s — higher is better</text>
+<text class="label" x="70" y="516">ZChain 4</text><rect class="base" x="280" y="490" width="371" height="38" rx="7"/><text class="value" x="666" y="516">46.37</text>
+<text class="label" x="70" y="566">ZChain 5 Speed</text><rect class="speed" x="280" y="540" width="441" height="38" rx="7"/><text class="value" x="736" y="566">55.14</text>
+<text class="label" x="70" y="616">ZChain 8 Schema</text><rect class="schema" x="280" y="590" width="604" height="38" rx="7"/><text class="value" x="899" y="616">75.51</text>
+
+<text class="callout" x="900" y="566">Output: 1,070,680 B</text>
+<text class="foot" x="900" y="594">2.86% smaller than ZChain 5</text>
+</svg>

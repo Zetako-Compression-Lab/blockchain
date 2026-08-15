@@ -14,14 +14,14 @@ The public registry distinguishes a **real specialized model** from a model name
 
 | Chain / family | Serialization / surface | Maturity | Current direction | Page |
 |---|---|---|---|---|
-| Ethereum / Reth | JSON-RPC hex | **SUPPORTED** | negotiated `ETHEREUM_HEX`; 1.2.0 M4 reference run published | [Ethereum](ETHEREUM.md) |
-| Ethereum / EVM | native RLP | **RESEARCH** | `ETHEREUM_SCHEMA` stream writer smoke-valid with `encoding=3`; real Reth/Alloy RLP benchmark pending | [Ethereum](ETHEREUM.md) |
+| Ethereum / Reth | JSON-RPC hex | **SUPPORTED** | negotiated `ETHEREUM_HEX`; real Reth JSON corpus published | [Ethereum](ETHEREUM.md) |
+| Ethereum / Reth | native RLP | **SUPPORTED** | direct Alloy object adapter → `ETHEREUM_SCHEMA`; no `.ops` replay in supported path | [Ethereum](ETHEREUM.md) |
 | Base / Arbitrum / Optimism / Polygon / BNB / Avalanche | EVM JSON-RPC | **SUPPORTED model / chain bench pending** | reuse Ethereum hex family until data justifies divergence | [EVM L2](EVM_L2.md) |
-| Solana | JSON-RPC | **SUPPORTED** | 26.1 MB real mainnet RPC corpus; 1.2.0 reference run published | [Solana](SOLANA.md) |
+| Solana | JSON-RPC | **SUPPORTED** | 26.1 MB real mainnet RPC corpus; reference run published | [Solana](SOLANA.md) |
 | Agave | ledger source / shred / validator paths | **RESEARCH** | ledger-source corpus measured; live validator schema/transport still research | [Agave](AGAVE.md) |
-| CometBFT | CosmosHub JSON-RPC | **SUPPORTED** | 1.2.0 reference run published | [Cosmos / CometBFT](COSMOS_COMETBFT.md) |
+| CometBFT | CosmosHub JSON-RPC | **SUPPORTED** | reference run published | [Cosmos / CometBFT](COSMOS_COMETBFT.md) |
 | Cosmos SDK | protobuf | **ADAPTER_READY** | tags/varints structural; signatures/hashes opaque | [Cosmos / CometBFT](COSMOS_COMETBFT.md) |
-| Bitcoin | raw block / tx / witness | **ADAPTER_READY** | headers + compact integers structural; crypto opaque | [Bitcoin](BITCOIN.md) |
+| Bitcoin | raw block / tx / witness | **ADAPTER_READY** | native baseline established; specialized schema model next | [Bitcoin](BITCOIN.md) |
 | Polkadot / Substrate | SCALE | **ADAPTER_READY** | compact integer + hash/signature sidecars | [Substrate](SUBSTRATE.md) |
 | Cardano | CBOR | **ADAPTER_READY** | CBOR structure + crypto separation | [Cardano](CARDANO.md) |
 | Sui | BCS / RPC | **ADAPTER_READY** | BCS-aware structural model | [Sui](SUI.md) |
@@ -33,14 +33,18 @@ The public registry distinguishes a **real specialized model** from a model name
 
 | Surface | Savings | Encode | Decode |
 |---|---:|---:|---:|
+| **Ethereum native RLP `ETHEREUM_SCHEMA`** | **63.82%** | **108.24 MiB/s** | **75.51 MiB/s** |
 | Ethereum Reth JSON `ethereum-hex` | **82.37%** | **131.11 MiB/s** | **114.69 MiB/s** |
 | Solana mainnet RPC `solana-rpc` | **82.79%** | **110.40 MiB/s** | **67.93 MiB/s** |
 | CometBFT CosmosHub RPC `cometbft` | **69.53%** | **67.29 MiB/s** | **43.19 MiB/s** |
 | Agave ledger source `solana-shred` | **74.73%** | **81.81 MiB/s** | **54.38 MiB/s** |
 
+The Ethereum native row is the direct Alloy/Reth-compatible schema path on **24 real blocks / 5,246 transactions / 2,959,206 RLP bytes**. The value shown is codec-only direct-stream throughput; serializer→frame timing is reported separately on the Ethereum page.
+
 The Agave row is evidence on a ledger-source corpus; it does not upgrade live validator transport to `SUPPORTED`.
 
-[Full 1.2.0 M4 report →](ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
+[Direct Ethereum Schema report →](ZCHAIN_8_ETHEREUM_SCHEMA_DIRECT_ALLOY_SUPPORTED_REPORT.md)  
+[Multi-chain M4 report →](ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
 
 ## Why models follow serialization families
 
@@ -49,10 +53,11 @@ ZChain does not need one marketing codec name per chain if several chains expose
 Examples:
 
 - EVM-compatible JSON can share the Ethereum hex family;
+- native Ethereum RLP is a different integration surface from Ethereum JSON and now has its own supported schema model;
 - Sui and Aptos both use BCS concepts, but chain-specific payload distributions may still justify different tuning later;
 - Cosmos JSON-RPC and Cosmos protobuf are different workloads and should not share performance claims;
 - Agave validator structures are different from Solana JSON-RPC, even though they belong to the same ecosystem.
 
 ## Promotion policy
 
-An `ADAPTER_READY` or `RESEARCH` model becomes `SUPPORTED` only after a real corpus, exact round trip, optimized native benchmark and public methodology are available. Until then, its page describes **what will be measured**, not fictional performance.
+An `ADAPTER_READY` or `RESEARCH` model becomes `SUPPORTED` only after a real corpus, exact round trip, optimized native benchmark and public methodology are available. The Ethereum native RLP model is the first example of a schema-assisted model completing that promotion path.

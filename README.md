@@ -22,8 +22,8 @@ The public history is intentionally visible. Each generation exists because the 
 | **ZChain 4 — Fast Compatible** | v4 | C hot-path optimization without changing tested v3 output | **74.27 → 113.36 MiB/s encode** on the 64-file public corpus; same compressed byte count |
 | **ZChain 5 — Speed** | Speed_First | New speed-oriented stream, lighter model, RAW bypass | **126.53 MiB/s encode / 74.67 MiB/s decode** on the same corpus |
 | **ZChain 6 — Blockchain** | ZCB2 / blockchain profiles | First blockchain-specific routing and Ethereum hex specialization | Established that crypto-heavy fields should not always be treated like ordinary structured bytes |
-| **ZChain 7 — Schema** | ZCB3 | Runtime-assisted structure / opaque / reference model | Architecture validated in research microbenchmarks; synthetic figures are not presented as production Reth/Agave throughput |
-| **ZChain 8 — Blockchain Engine** | Blockchain C 1.1.x → 1.2.0 Research | Negotiated models, stable public C ABI, ZCB1 frames, installable SDK, multi-chain profile registry, schema stream writer research | Current product line |
+| **ZChain 7 — Schema** | ZCB3 | Runtime-assisted structure / opaque / reference model | Architecture validated in schema-assisted research microbenchmarks |
+| **ZChain 8 — Blockchain Engine** | current engine | Negotiated models, stable public C ABI, ZCB1 frames, installable SDK, multi-chain registry and direct serializer adapters | **Native Ethereum RLP schema model now SUPPORTED** |
 
 ### The change in architecture
 
@@ -54,9 +54,39 @@ The product therefore evolved from a standalone codec into a **blockchain compre
 
 ---
 
-## Latest reference run — Blockchain C 1.2.0 Research
+## Native Ethereum milestone — direct Alloy/Reth schema model
 
-The latest public reference run uses an Apple M4, native C release build with `-O3 -DNDEBUG -mcpu=native`. `make test` and ASan/UBSan pass, and every benchmarked file round-trips exactly.
+`ETHEREUM_SCHEMA` is now **SUPPORTED** through a direct Alloy/Reth-compatible adapter. The adapter works from native Alloy transaction objects and calls `zchain_bc_stream_*` directly — **no `.ops` replay file and no RLP parser inside the timed codec path**.
+
+Reference corpus:
+
+- **24 real Ethereum blocks**;
+- **5,246 native Alloy transactions**;
+- legacy, EIP-1559, EIP-4844 blob and EIP-7702 transaction mix;
+- **2,959,206 native RLP bytes**.
+
+### Same-RLP comparison
+
+| Codec | Output bytes | Savings | Encode | Decode |
+|---|---:|---:|---:|---:|
+| ZChain 4 — Fast Compatible | 1,102,352 | 62.75% | 79.50 MiB/s | 46.37 MiB/s |
+| ZChain 5 — Speed | 1,102,219 | 62.75% | 91.24 MiB/s | 55.14 MiB/s |
+| ZChain 8 — `ethereum-rlp` compatible | 1,102,352 | 62.75% | 74.23 MiB/s | 46.12 MiB/s |
+| **ZChain 8 — `ETHEREUM_SCHEMA`** | **1,070,680** | **63.82%** | **108.24 MiB/s** | **75.51 MiB/s** |
+
+Against ZChain 5 Speed on the same RLP bytes, ZChain 8 Schema is **2.86% smaller**, **18.6% faster to encode**, and **36.9% faster to decode** in codec-only mode.
+
+![Ethereum native RLP benchmark](assets/zchain-ethereum-schema-native.svg)
+
+The end-to-end adapter measurement is reported separately: **58.28 MiB/s serializer→frame encode** and **74.02 MiB/s decode**. This keeps codec throughput distinct from Alloy serialization and span-marking cost.
+
+[Open the direct Alloy/Reth supported benchmark →](docs/ZCHAIN_8_ETHEREUM_SCHEMA_DIRECT_ALLOY_SUPPORTED_REPORT.md)
+
+---
+
+## Latest multi-chain reference run
+
+The existing Apple M4 native C reference run remains the current public summary for Ethereum JSON, Solana RPC, CometBFT and Agave ledger-source payloads.
 
 | Corpus | Payload | Raw bytes | ZChain bytes | Savings | Encode | Decode |
 |---|---|---:|---:|---:|---:|---:|
@@ -66,13 +96,13 @@ The latest public reference run uses an Apple M4, native C release build with `-
 | **CometBFT CosmosHub RPC JSON** | `cometbft` | 968,332 | **295,048** | **69.53%** | **67.29 MiB/s** | **43.19 MiB/s** |
 | **Agave ledger source** | `solana-shred` | 879,258 | **222,165** | **74.73%** | **81.81 MiB/s** | **54.38 MiB/s** |
 
-[Open the full 1.2.0 M4 benchmark report →](docs/ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
+[Open the full multi-chain M4 benchmark report →](docs/ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
 
 ---
 
-## Current Ethereum milestone
+## Ethereum JSON specialization
 
-The strongest current real-corpus specialization is the negotiated `ETHEREUM_HEX` profile on the Reth Ethereum JSON corpus.
+The negotiated `ETHEREUM_HEX` profile remains the supported model for Reth Ethereum JSON payloads.
 
 | Path | Raw bytes | Final bytes | Savings | Encode | Decode |
 |---|---:|---:|---:|---:|---:|
@@ -83,10 +113,6 @@ On this run, the negotiated specialization is **8.30% smaller**, **1.43× faster
 
 [Read the Ethereum page →](docs/ETHEREUM.md)
 
-### Ethereum Schema / RLP status
-
-`ETHEREUM_SCHEMA` now has an explicit stream-writer path and emits `encoding=3` in the sanitizer-covered smoke test, but it is **not yet benchmarked as a supported profile**. The next gate is real Reth / Alloy RLP bytes with runtime-provided spans.
-
 ---
 
 ## Blockchain pages
@@ -95,12 +121,12 @@ Every page answers the same questions: **what do we compress, why does it matter
 
 | Ecosystem | Current public status | Page |
 |---|---|---|
-| **Ethereum / Reth** | `ETHEREUM_HEX` supported; schema/RLP research validated at smoke level | [Ethereum](docs/ETHEREUM.md) |
+| **Ethereum / Reth** | `ETHEREUM_HEX` and direct Alloy/RLP `ETHEREUM_SCHEMA` **SUPPORTED** | [Ethereum](docs/ETHEREUM.md) |
 | **EVM L2 / EVM-compatible** | Ethereum JSON-hex model reusable; chain-specific benches pending | [EVM L2](docs/EVM_L2.md) |
 | **Solana** | Real mainnet RPC corpus measured; RPC profile supported | [Solana](docs/SOLANA.md) |
 | **Agave** | Ledger-source profile measured; validator-side schema integration remains research | [Agave](docs/AGAVE.md) |
 | **Cosmos / CometBFT** | Real CosmosHub RPC corpus measured; CometBFT profile supported | [Cosmos / CometBFT](docs/COSMOS_COMETBFT.md) |
-| **Bitcoin** | Native block / transaction adapter ready; specialized benchmark pending | [Bitcoin](docs/BITCOIN.md) |
+| **Bitcoin** | Native block / transaction baseline established; specialized model next | [Bitcoin](docs/BITCOIN.md) |
 | **Substrate / Cardano / Sui / Aptos / TRON / others** | Adapter-ready or research models | [Model matrix](docs/MODEL_MATRIX.md) |
 
 ---
@@ -110,6 +136,7 @@ Every page answers the same questions: **what do we compress, why does it matter
 Depending on the chain and integration boundary, the recurring targets are:
 
 - **RPC responses** — blocks, receipts, transactions, traces, account data;
+- **native serialization** — RLP and other chain-specific byte formats where the runtime already knows field identity;
 - **storage and archive paths** — blocks, receipts, snapshots, exports, indexer datasets;
 - **state sync / snapshot movement** — large structured batches where byte reduction can offset codec CPU;
 - **service-to-service transfer** — when an explicit negotiated format is appropriate;
@@ -139,8 +166,8 @@ Public benchmark pages follow the same rules:
 2. exact workload and serialization named;
 3. native codec timing separated from I/O, hashing and process startup;
 4. compression and decompression throughput reported separately;
-5. build profile and hardware stated;
-6. p50/p95/p99 used for integration latency when available;
+5. serializer→frame measurements reported separately from codec-only throughput;
+6. build profile and hardware stated;
 7. synthetic architecture tests labeled as synthetic;
 8. no chain-specific production claim without a real chain-specific corpus.
 
@@ -170,10 +197,10 @@ The comparison focuses on the tradeoff that matters for blockchain infrastructur
 │   ├── AGAVE.md                    Agave validator integration
 │   ├── COSMOS_COMETBFT.md          Cosmos / CometBFT
 │   ├── BITCOIN.md                  Bitcoin model
-│   ├── MODEL_MATRIX.md             remaining serialization families
+│   ├── MODEL_MATRIX.md             serialization-family maturity
 │   ├── METHODOLOGY.md              benchmark rules
 │   ├── COMPRESSION_COMPARISON.md   ZChain vs other codecs
-│   ├── ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md
+│   ├── ZCHAIN_8_ETHEREUM_SCHEMA_DIRECT_ALLOY_SUPPORTED_REPORT.md
 │   └── evidence / legacy reports   detailed engineering evidence
 └── assets/                         readable public charts
 ```

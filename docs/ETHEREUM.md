@@ -6,12 +6,10 @@ Ethereum is currently ZChain's strongest public specialization because execution
 
 ## What we compress
 
-Current public evidence covers:
+Current public evidence covers two distinct Ethereum surfaces:
 
-- `eth_getBlockByNumber` responses with full transactions;
-- `eth_getBlockReceipts` responses;
-- block metadata, addresses, transaction fields, logs, topics, bloom filters and `0x`-encoded payloads;
-- future integration work: native RLP transaction, receipt and block-body batches.
+- **JSON-RPC**: blocks, receipts, logs, topics, bloom filters and `0x`-encoded payloads through the negotiated `ETHEREUM_HEX` model;
+- **native RLP**: Alloy/Reth-compatible transaction serialization through the schema-assisted `ETHEREUM_SCHEMA` model.
 
 ## Why it matters
 
@@ -19,29 +17,96 @@ Ethereum infrastructure repeatedly moves large structured payloads between nodes
 
 - RPC response bytes;
 - receipt/log export size;
+- native transaction and block-body serialization;
 - archive and snapshot movement;
 - internal service-to-service transfer;
-- future storage or native serialization paths when the CPU/latency economics are proven.
+- future storage or network paths when the CPU/latency economics are proven.
 
-## Evolution of the Ethereum model
+---
 
-### Generic / compatibility phase
+## Ethereum model evolution
+
+### 1. Generic / compatibility phase
 
 The first public Reth corpus established that ZChain compresses Ethereum blocks and receipts losslessly, but the codec treated the entire payload as one generic structured stream.
 
-### Blockchain specialization
+### 2. Negotiated `ETHEREUM_HEX`
 
-The first blockchain prototype recognized that large hex-heavy regions behave differently from ordinary structured bytes. It improved Ethereum results, but automatic scanning added cost on other payloads.
+The blockchain-specialized path removed the need for a global profile scan. The caller explicitly selects the Ethereum hex model through the frame API.
 
-### Negotiated `ETHEREUM_HEX`
+This profile remains the supported path for Ethereum JSON-RPC workloads.
 
-The production direction removes that global scan. The caller explicitly selects the Ethereum hex profile through the frame API.
+### 3. Native `ETHEREUM_SCHEMA`
 
-That means the blockchain integration says **what kind of payload it is**; ZChain does not search arbitrary input trying to infer it.
+The next architectural step moves below JSON. Reth/Alloy already knows field identity while serializing native transactions, so ZChain uses that knowledge directly.
 
-## Latest real-corpus result
+```text
+Alloy / Reth objects
+       │
+       ▼
+RLP serialization
+       │
+       ├── structural bytes ───────────────> ZChain model
+       ├── hashes / signatures / crypto ──> opaque path
+       └── known repeated values ─────────> references
+                          │
+                          ▼
+                 ETHEREUM_SCHEMA
+                          │
+                          ▼
+                         ZCB1
+```
 
-Latest reference run: Apple M4, native C release, `-O3 -DNDEBUG -mcpu=native`, 50 iterations, same 2,908,507-byte Reth Ethereum JSON corpus.
+There is **no RLP parser inside ZChain's timed codec path** and no `.ops` replay file in the supported direct adapter path.
+
+---
+
+## Supported native RLP benchmark
+
+Reference corpus:
+
+- **24 real Ethereum blocks** fetched through JSON-RPC;
+- **5,246 native Alloy transactions**;
+- transaction mix including legacy, EIP-1559, EIP-4844 blob and EIP-7702;
+- **2,959,206 native RLP bytes**;
+- Apple M4, release/O3 native benchmark.
+
+### Same-RLP codec comparison
+
+| Codec | Output bytes | Savings | Encode | Decode |
+|---|---:|---:|---:|---:|
+| ZChain 4 — Fast Compatible | 1,102,352 | 62.75% | 79.50 MiB/s | 46.37 MiB/s |
+| ZChain 5 — Speed | 1,102,219 | 62.75% | 91.24 MiB/s | 55.14 MiB/s |
+| ZChain 8 — `ethereum-rlp` compatible | 1,102,352 | 62.75% | 74.23 MiB/s | 46.12 MiB/s |
+| **ZChain 8 — `ETHEREUM_SCHEMA`** | **1,070,680** | **63.82%** | **108.24 MiB/s** | **75.51 MiB/s** |
+
+Against ZChain 5 Speed on the exact same RLP bytes, `ETHEREUM_SCHEMA` is:
+
+- **2.86% smaller**;
+- **18.6% faster to encode** in codec-only mode;
+- **36.9% faster to decode**.
+
+![Ethereum native RLP benchmark](../assets/zchain-ethereum-schema-native.svg)
+
+### Serializer-to-frame measurement
+
+The direct Alloy adapter also reports a separate end-to-end serialization measurement:
+
+| Measurement | Input | ZCB1 bytes | Savings | Encode | Decode |
+|---|---:|---:|---:|---:|---:|
+| **Alloy serializer → ZChain frame** | 2,959,206 | **1,070,680** | **63.82%** | **58.28 MiB/s** | **74.02 MiB/s** |
+
+This timing includes Alloy transaction serialization, object-derived span marking and ZChain frame generation. It is deliberately not presented as codec-only throughput.
+
+[Open the full direct Alloy/Reth supported report →](ZCHAIN_8_ETHEREUM_SCHEMA_DIRECT_ALLOY_SUPPORTED_REPORT.md)
+
+---
+
+## Supported Ethereum JSON benchmark
+
+The negotiated `ETHEREUM_HEX` model remains the supported JSON-RPC specialization.
+
+Apple M4, native C release, same 2,908,507-byte Reth Ethereum JSON corpus:
 
 | Path | Final bytes | Savings | Encode | Decode | Encode ns/B | Decode ns/B |
 |---|---:|---:|---:|---:|---:|---:|
@@ -54,45 +119,42 @@ Relative to the previous Ethereum path:
 - **1.43× faster encode**;
 - **1.99× faster decode**.
 
-All benchmarked files round-trip exactly, and the release passed `make test` plus ASan/UBSan validation.
+[Open the multi-chain M4 benchmark report →](ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
 
-[Open the full 1.2.0 M4 benchmark report →](ZCHAIN_BLOCKCHAIN_C_1_2_0_M4_BENCH_REPORT.md)
+---
 
-## Receipts as a compression workload
+## Why schema assistance changes the result
 
-Receipts are particularly interesting because logs, addresses, topics, bloom filters and repeated JSON keys create strong structure while transaction-specific hashes and payloads introduce entropy.
+The schema model separates data according to information already available in the blockchain runtime:
 
-Historical public measurements are retained in [the Reth benchmark evidence](zchain-reth-benchmarks.md).
+| Span type | Typical Ethereum content | Strategy |
+|---|---|---|
+| `STRUCTURAL` | RLP prefixes, lengths, tx type markers, structured numeric fields | ZChain structural model |
+| `OPAQUE` | signatures, hashes, roots, entropy-heavy crypto fields | bypass probabilistic modeling |
+| `REFERENCEABLE` | values that may be reused later | stored once, assigned reference id |
+| `KNOWN_REF` | runtime-known repeated values | direct reference, no search required |
+| `REF_RUN` | adjacent known references | compact reference run |
 
-## Next model: native RLP / schema-assisted Ethereum
+The benefit is not that ZChain parses Ethereum better after the fact. The benefit is that **the runtime tells ZChain what it already knows**.
 
-The next serious Ethereum step is **not another JSON scanner**. The target is a native integration where Reth / Alloy already knows field boundaries.
+---
 
-Conceptually:
+## Validation and support status
 
-```text
-Reth / Alloy objects
-       │
-       ├── RLP structure, lengths, small integers ──> ZChain structural model
-       ├── hashes / roots / signatures ─────────────> opaque path
-       └── repeated known values ───────────────────> references
-                          │
-                          ▼
-                 negotiated ZCB1 frame
-```
+`ETHEREUM_SCHEMA` is now **SUPPORTED** because the reference path satisfies the intended support gate:
 
-### Current `ETHEREUM_SCHEMA` status
-
-`ETHEREUM_SCHEMA` now has an explicit stream-writer implementation path and the smoke example emits:
-
-```text
-encoding=3 frame=2430
-```
-
-The smoke path passes sanitizer-covered round-trip tests. **No supported-performance number is published yet.** The remaining requirement is real Reth / Alloy RLP bytes plus runtime-provided spans.
-
-A native RLP profile will remain `RESEARCH` until the same real RLP bytes are compared against RAW, v4, Speed and the schema-assisted path.
+- real Ethereum blocks;
+- native Alloy objects;
+- exact RLP reconstruction;
+- direct `zchain_bc_stream_*` integration;
+- no `.ops` bridge in the supported final path;
+- `make test` passing;
+- adapter `cargo check` passing;
+- distribution build passing;
+- measured gain against ZChain 5 Speed on the same native RLP bytes.
 
 ## Claim boundary
 
-The current Ethereum JSON result proves codec behavior on the documented Reth corpus. It does **not** by itself prove P2P bandwidth reduction, database savings or production node latency. Those require path-specific integration tests.
+The current public evidence proves codec behavior on the documented Ethereum JSON and native RLP corpora. It does **not** automatically prove equivalent P2P bandwidth reduction, database savings or execution-client latency improvements. Those require measurements in the exact production path.
+
+Historical evidence remains in [the Reth benchmark report](zchain-reth-benchmarks.md).
