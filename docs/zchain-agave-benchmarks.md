@@ -28,9 +28,9 @@ cd agave
 
 Observed locally on 2026-08-15:
 
-| Input | Raw bytes | ZChain bytes | Ratio | Savings | Encode | Decode | Round trip |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| `ZChain_Benchmark_Report.md` | 6,000 | 2,887 | 0.4812 | 51.88% | 4.712 ms | 4.635 ms | SHA-256 OK |
+| Input | Raw bytes | ZChain bytes | Ratio | Savings | Round trip |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `ZChain_Benchmark_Report.md` | 6,000 | 2,887 | 0.4812 | 51.88% | SHA-256 OK |
 
 ## Directory Benchmark
 
@@ -40,24 +40,37 @@ Observed locally on 2026-08-15:
 
 Observed local CSV sample:
 
-| File | Raw bytes | ZChain bytes | Ratio | Savings | Encode MiB/s | Decode MiB/s | Round trip |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| `arithmetic.rs` | 3,639 | 1,337 | 0.3674 | 63.26% | 1.07 | 0.44 | OK |
-| `bijection.rs` | 1,830 | 615 | 0.3361 | 66.39% | 0.89 | 0.29 | OK |
-| `buffer.rs` | 2,389 | 978 | 0.4094 | 59.06% | 1.05 | 0.40 | OK |
-| `codec.rs` | 6,356 | 1,778 | 0.2797 | 72.03% | 2.24 | 0.59 | OK |
-| `main.rs` | 8,372 | 3,137 | 0.3747 | 62.53% | 2.24 | 0.81 | OK |
-| `probability.rs` | 1,887 | 961 | 0.5093 | 49.07% | 0.99 | 0.48 | OK |
-| `utils.rs` | 3,339 | 1,683 | 0.5040 | 49.60% | 1.41 | 0.68 | OK |
+| File | Raw bytes | ZChain bytes | Ratio | Savings | Round trip |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `arithmetic.rs` | 3,639 | 1,337 | 0.3674 | 63.26% | OK |
+| `bijection.rs` | 1,830 | 615 | 0.3361 | 66.39% | OK |
+| `buffer.rs` | 2,389 | 978 | 0.4094 | 59.06% | OK |
+| `codec.rs` | 6,356 | 1,778 | 0.2797 | 72.03% | OK |
+| `main.rs` | 8,372 | 3,137 | 0.3747 | 62.53% | OK |
+| `probability.rs` | 1,887 | 961 | 0.5093 | 49.07% | OK |
+| `utils.rs` | 3,339 | 1,683 | 0.5040 | 49.60% | OK |
+
+## Performance Publication Policy
+
+The development-build timing and throughput values from the initial Agave port are intentionally **not published as ZChain performance figures**. They were collected through non-release benchmark commands and are not representative of the optimized codec target.
+
+The next performance publication pass should use:
+
+```bash
+./cargo run --release -p zchain-bench --features zchainv3 -- ../ZChain_Benchmark_Report.md
+./cargo run --release -p zchain-bench-dir --features zchainv3 -- ../zchainv3-rs-full/src /tmp/zchain-src-bench-release.csv
+```
+
+Representative validator hardware should be recorded together with release build settings, payload sizes, iteration counts, encode/decode throughput, latency distributions, and round-trip integrity.
 
 ## Public Use Cases
 
 1. **Shred payload shadow measurements** — enable `zc_shadow` to measure raw-vs-ZChain compression on ledger shred payloads without changing network behavior.
 2. **Blockstore storage experiments** — use the fail-open ledger shims to compare compressed payload size against raw payload size before enabling any write path.
-3. **Validator log and JSON payload compression** — use `zchain-bench-dir` against captured validator artifacts and publish CSVs with ratio, savings, throughput, and round-trip status.
+3. **Validator log and JSON payload compression** — use `zchain-bench-dir` against captured validator artifacts and publish CSVs with ratio, savings, and round-trip status. Publish performance separately only from validated release-mode runs.
 
 ## Notes
 
 - Current code is fail-open by design: compression errors return the original bytes instead of failing validator paths.
 - The codec emits warnings in the current port (`unused_imports` and `static_mut_refs`). They do not block the benchmark commands above, but should be cleaned before treating the integration as production-ready.
-- Benchmark numbers above are local development measurements, not tuned release builds. Public claims should rerun the same commands with `--release` on the target hardware.
+- Current public compression figures are local development integration measurements. **No public ZChain speed claim is made from the initial dev-build timing data.**
