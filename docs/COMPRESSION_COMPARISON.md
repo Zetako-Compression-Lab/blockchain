@@ -1,18 +1,29 @@
-# ZChain Compression Comparison
+# ZChain vs Established Codecs — Selected Public Benchmarks
 
-This document presents selected public benchmark comparisons between **ZChain Speed_First** and established general-purpose codecs on structured blockchain-oriented payloads.
+[← Documentation index](README.md) · [Product evolution](../README.md)
 
-The purpose is not to claim universal superiority. Results are **workload-specific** and should be interpreted together with the exact payload type, codec preset, build, and hardware used for the test.
+This is the dedicated public comparison page for **ZChain Speed_First** against selected established general-purpose codecs on structured blockchain-oriented payloads.
 
-> **Note:** this public comparison intentionally focuses on gzip, Brotli, and LZMA2/7zip.
+The comparison currently includes **gzip, Brotli and LZMA2/7zip**. Results are workload- and preset-specific; this page does not claim universal superiority across unrelated data types.
+
+## What is being compared
+
+For each workload we care about two independent outcomes:
+
+1. **How many bytes remain after compression?**
+2. **How much encode/decode throughput is required to get there?**
+
+A codec that produces the smallest possible file is not automatically the best choice for a latency-sensitive blockchain path. Conversely, a very fast codec is not automatically useful if it leaves too many bytes on the wire or disk.
+
+ZChain Speed_First is intended to explore that **compression-density / throughput balance**.
 
 ---
 
 ## Ethereum receipts — 1 MiB
 
-Ethereum receipt payloads are highly structured and repetitive: logs, addresses, topics, bloom filters, and hexadecimal fields create a strong compression opportunity.
+Ethereum receipts are a particularly relevant structured workload: logs, addresses, topics, bloom filters and hexadecimal fields create repeated structure while still representing real execution-layer data.
 
-| Codec | Final size | % of original | Compression | Decompression |
+| Codec | Final size | % original | Compression | Decompression |
 |---|---:|---:|---:|---:|
 | **ZChain Speed_First** | **43,318 B** | **4.13%** | **170 MiB/s** | **113 MiB/s** |
 | gzip-1 | 74,316 B | 7.09% | 446 MiB/s | 1,292 MiB/s |
@@ -22,45 +33,33 @@ Ethereum receipt payloads are highly structured and repetitive: logs, addresses,
 | LZMA2 / 7zip p1 | **29,842 B** | **2.85%** | 101 MiB/s | 659 MiB/s |
 | LZMA2 / 7zip p5 | 43,876 B | 4.18% | 12.6 MiB/s | 562 MiB/s |
 
-### ZChain vs gzip-6
+![Ethereum receipts codec comparison](../assets/zchain-ethereum-receipts-comparison.svg)
 
-On this workload, ZChain Speed_First produces a substantially smaller output while operating at roughly the same compression speed:
+### Against gzip-6
 
-- ZChain: **43,318 B**, **170 MiB/s**
-- gzip-6: **61,489 B**, **185 MiB/s**
+ZChain produces **43,318 B** versus **61,489 B** for gzip-6 — about **30% less compressed data** — while encode throughput remains close: **170 MiB/s vs 185 MiB/s**.
 
-The ZChain output is about **30% smaller** than gzip-6 while encode throughput remains in the same order of magnitude.
+### Against Brotli q5
 
-### ZChain vs Brotli q5
+Brotli q5 produces **42,279 B**, only about **2.4% smaller** than ZChain's 43,318 B. In this test ZChain encodes slightly faster: **170 MiB/s vs 159 MiB/s**.
 
-Brotli q5 and ZChain land very close in compressed size:
+### Against LZMA2 / 7zip
 
-- ZChain: **43,318 B**
-- Brotli q5: **42,279 B**
+LZMA2 preset 1 reaches the smallest output in this table at **29,842 B**, but ZChain encodes about **1.7× faster**.
 
-The difference is about **2.4%**, while ZChain is slightly faster in compression on this test:
+At preset 5, LZMA2 produces a very similar final size to ZChain — **43,876 B vs 43,318 B** — while ZChain encodes about **13.5× faster**.
 
-- ZChain: **170 MiB/s**
-- Brotli q5: **159 MiB/s**
+### What this workload says
 
-### ZChain vs LZMA2 / 7zip
+On this receipts workload, ZChain sits in a useful middle ground: materially denser than gzip-6, nearly the same size as Brotli q5 at slightly higher encode throughput, and much faster than the LZMA2 p5 configuration while landing at a similar size.
 
-LZMA2 can reach a smaller output on this Ethereum receipt workload, especially at preset 1, but it pays a larger compression-speed cost.
-
-Compared with LZMA2 preset 5:
-
-- ZChain encode: **170 MiB/s**
-- LZMA2 p5 encode: **12.6 MiB/s**
-
-ZChain is therefore about **13.5× faster** in compression on this benchmark while producing a very similar final size.
-
-Against LZMA2 preset 1, LZMA2 compresses more aggressively, but ZChain remains about **1.7× faster** in compression.
+Its decompression throughput is lower than the listed general-purpose codecs, which remains an important optimization area for latency-sensitive read-heavy paths.
 
 ---
 
 ## Large structured JSON — `blocks-4m`
 
-This workload highlights the opposite side of the tradeoff: ZChain achieves both strong compression density and competitive encode throughput on a large structured blockchain-style JSON payload.
+This larger structured blockchain-style JSON workload shows a different part of the tradeoff.
 
 | Codec | Final size | Encode |
 |---|---:|---:|
@@ -69,38 +68,65 @@ This workload highlights the opposite side of the tradeoff: ZChain achieves both
 | Brotli q5 | 253 KB | 128 MiB/s |
 | LZMA2 p1 | 227 KB | 67 MiB/s |
 
-### Interpretation
+### Size result
 
-On this workload, ZChain produces:
+ZChain produces approximately:
 
-- about **50% less data than gzip-6**;
-- about **35% less data than Brotli q5**;
-- about **27% less data than LZMA2 p1**.
+- **50% less data than gzip-6**;
+- **35% less data than Brotli q5**;
+- **27% less data than LZMA2 p1**.
 
-At the same time, ZChain encode throughput is:
+### Encode result
 
-- about **1.62× faster than gzip-6**;
-- about **1.33× faster than Brotli q5**;
-- about **2.54× faster than LZMA2 p1**.
+ZChain is approximately:
 
-This is a particularly relevant result for blockchain-oriented structured JSON, where reducing network/storage volume without sacrificing encode latency is often more important than optimizing for archival compression alone.
+- **1.62× faster than gzip-6**;
+- **1.33× faster than Brotli q5**;
+- **2.54× faster than LZMA2 p1**.
+
+This is one of the strongest public ZChain examples because it combines **smaller output and higher encode throughput** than every listed configuration on the same workload.
 
 ---
 
-## Public positioning
+## Why these comparisons matter for blockchain systems
 
-These results support a narrow and useful claim:
+Different blockchain paths value different tradeoffs:
 
-> **On selected structured blockchain payloads, ZChain Speed_First can match or exceed the compression density of gzip and Brotli while maintaining competitive or higher encode throughput; LZMA2 can compress more aggressively on some payloads, but at a significant encode-speed cost.**
+| Use case | What usually matters most |
+|---|---|
+| RPC response generation | encode latency + bytes transferred |
+| Receipt/log export | compression density + sustained throughput |
+| Snapshot/archive creation | density may matter more than latency |
+| Validator hot path | latency and CPU cost dominate; integration must be proven separately |
+| Analytics/data movement | balance between bytes, encode throughput and decode throughput |
 
-The benchmark should not be generalized to unrelated datasets without additional measurements.
+The benchmark therefore reports both **size** and **speed** instead of declaring one codec globally best.
 
-## Reporting rules
+---
 
-When quoting these comparisons publicly:
+## Methodology / reporting rules
 
-- always name the workload;
-- always include codec preset/quality level;
+When quoting this page publicly:
+
+- name the exact workload;
+- name the codec preset or quality level;
 - keep compression and decompression throughput separate;
-- do not convert one workload result into a universal codec claim;
-- preserve the exact measured values rather than extrapolating them.
+- do not extrapolate one structured blockchain result to unrelated datasets;
+- use the exact measured values rather than generalized marketing numbers;
+- distinguish native codec benchmarks from live blockchain integration results.
+
+## Public conclusion
+
+The selected evidence supports this scoped statement:
+
+> **On the documented structured blockchain workloads, ZChain Speed_First can deliver a strong combination of compressed size and encode throughput relative to the listed gzip, Brotli and LZMA2/7zip configurations. The tradeoff varies by workload, and decode performance remains a separate consideration.**
+
+---
+
+## Related pages
+
+- [Ethereum / Reth](zchain-reth-benchmarks.md)
+- [Solana mainnet](SOLANA_MAINNET_BENCHMARKS.md)
+- [Cosmos / CometBFT](COMETBFT_COSMOS_BENCHMARKS.md)
+- [v3 → v4 → Speed_First](../README.md)
+- [Public claims](PUBLIC_CLAIMS.md)

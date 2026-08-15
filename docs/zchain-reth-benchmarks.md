@@ -1,109 +1,138 @@
-# ZChain Benchmarks on Reth / Ethereum Payloads
+# Ethereum / Reth — ZChain Benchmark Page
 
-This experiment adds a standalone ZChain benchmark harness to a Reth checkout and measures compression on real Ethereum JSON-RPC payloads.
+[← Documentation index](README.md) · [Product evolution](../README.md) · [Codec comparison](COMPRESSION_COMPARISON.md)
 
-The first integration is intentionally outside the Reth node runtime. It provides reproducible public metrics before touching networking, storage, sync, or consensus-adjacent paths.
+This page documents how ZChain behaves on **real Ethereum execution-layer JSON-RPC payloads** collected for a standalone Reth-adjacent benchmark.
 
-## Why Reth
+## What we compress
 
-Reth is a Rust Ethereum execution client with a modular codebase. That makes it a useful target for ZChain experiments on:
+The documented Ethereum sample contains ten JSON-RPC payloads:
 
-- JSON-RPC block payloads;
-- receipt payloads;
+- **5 × `eth_getBlockByNumber`** responses with full transactions;
+- **5 × `eth_getBlockReceipts`** responses for the same blocks.
+
+The release Reth harness processes **2,908,507 raw bytes** in total.
+
+## Why Ethereum data is relevant
+
+Ethereum execution-layer payloads combine large amounts of structured hexadecimal and repeated metadata: transaction fields, addresses, topics, bloom filters, receipt fields and logs. This makes them a useful public test for a codec intended to reduce structured blockchain data.
+
+Potential integration targets, each requiring its own validation, include:
+
+- large JSON-RPC responses;
+- receipt and log export pipelines;
+- snapshot or archival sidecars;
+- database/export representations;
 - future RLP block or transaction batches;
-- future snapshot/export sidecars;
-- future P2P payload experiments.
+- future networking experiments.
 
-## Added tool
+The current public benchmark is intentionally **outside the live Reth node runtime**. That lets compression behavior be measured before introducing a dependency into networking, storage or sync paths.
+
+---
+
+## Benchmark methodology
+
+Standalone tool:
 
 ```text
 tools/reth-zchain-bench/
 ```
 
-The tool includes the local ZChain v3 Rust port by path and benchmarks every file in an input directory. It writes a CSV containing:
-
-- raw bytes;
-- ZChain bytes;
-- compression ratio;
-- savings percentage;
-- encode/decode time;
-- encode/decode throughput;
-- input and decoded SHA-256;
-- round-trip status.
-
-## Fetch dataset
+Dataset fetch:
 
 ```bash
 cd tools/reth-zchain-bench
 ./fetch-ethereum-payloads.sh benchmark-data/ethereum-json
 ```
 
-The script uses `ETH_RPC_URL` when set, otherwise it uses the configured public Ethereum RPC endpoint.
-
-The documented sample contains:
-
-- `eth_getBlockByNumber` with full transactions for five consecutive blocks;
-- `eth_getBlockReceipts` for the same five blocks.
-
-## Run benchmark
+Benchmark:
 
 ```bash
-cd tools/reth-zchain-bench
 cargo run --release -- benchmark-data/ethereum-json benchmark-data/reth-zchain-results.csv
 ```
 
-The use of `--release` is important: these figures are intended to represent optimized benchmark execution rather than development-build integration overhead.
+The benchmark records raw/compressed bytes, ratio, savings, timing, throughput, SHA-256 input/output and round-trip status.
 
-## Observed results
+### Measurement boundary
 
-Local run on 2026-08-15:
+The Reth harness is a **release integration benchmark**. Native codec-only speed is measured separately by the C in-memory benchmark, where file I/O, process startup, CSV output and hashing are outside the timed section.
 
-| Payload | Files | Raw bytes | ZChain bytes | Ratio | Savings | Encode | Decode | Round trip |
-|---|---:|---:|---:|---:|---:|---:|---:|---|
-| `eth_getBlockByNumber` | 5 | 1,256,590 | 363,968 | 0.2896 | **71.04%** | 31.578 ms | 39.715 ms | **5/5 OK** |
-| `eth_getBlockReceipts` | 5 | 1,651,917 | 195,266 | 0.1182 | **88.18%** | 13.306 ms | 18.803 ms | **5/5 OK** |
-| **Total** | **10** | **2,908,507** | **559,234** | **0.1923** | **80.77%** | **44.884 ms** | **58.518 ms** | **10/10 OK** |
+---
 
-## Derived effective throughput
+## Release Reth results
 
-Using total raw bytes divided by aggregate measured encode/decode time:
+Observed on 2026-08-15:
 
-| Scope | Effective throughput |
-|---|---:|
-| Encode | **~61.8 MiB/s** |
-| Decode | **~47.4 MiB/s** |
+| Payload | Files | Raw bytes | ZChain bytes | Savings | Encode | Decode | Round trip |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Full block JSON | 5 | 1,256,590 | 363,968 | **71.04%** | 31.578 ms | 39.715 ms | **5/5 OK** |
+| Receipts JSON | 5 | 1,651,917 | 195,266 | **88.18%** | 13.306 ms | 18.803 ms | **5/5 OK** |
+| **Total** | **10** | **2,908,507** | **559,234** | **80.77%** | **44.884 ms** | **58.518 ms** | **10/10 OK** |
 
-These values are **derived from this specific release run and dataset**. They are useful public evidence for this workload, but they are not universal throughput guarantees for every ZChain payload or integration.
+Derived effective throughput for this specific Reth release run:
 
-## Interpretation
+- **~61.8 MiB/s encode**
+- **~47.4 MiB/s decode**
 
-This is a strong public use case for ZChain on Ethereum execution-layer data:
+These values describe this harness and dataset; they are not universal codec throughput claims.
 
-- receipts JSON compresses very strongly because logs, addresses, topics, bloom filters, and hex fields are structurally repetitive;
-- full block JSON also compresses strongly despite transaction entropy;
-- the documented dataset achieves **80.77% aggregate savings**;
-- all ten payloads reconstruct successfully with SHA-256 equality;
-- the benchmark is executed in release mode.
+---
 
-## Benchmark boundary
+## Native v4 and Speed_First results on Ethereum
 
-This benchmark measures a standalone Reth-adjacent harness. It does **not** yet prove:
+The newer native C profile comparison uses the same Ethereum payload class inside the 64-file public blockchain corpus.
 
-- Reth node runtime integration;
-- Reth P2P network throughput;
-- database/storage-path performance;
-- sync-path latency;
-- mainnet-wide bandwidth savings.
+| Workload | Profile | Savings / size behavior | Encode | Decode |
+|---|---|---|---:|---:|
+| Ethereum block JSON | **v4** | **71.04% savings** | **71.63 MiB/s** | **42.56 MiB/s** |
+| Ethereum block JSON | **Speed_First** | +2.59% compressed size vs v4 | **79.07 MiB/s** | **45.54 MiB/s** |
+| Ethereum receipts JSON | **v4** | **88.18% savings** | **143.14 MiB/s** | **92.83 MiB/s** |
+| Ethereum receipts JSON | **Speed_First** | +5.62% compressed size vs v4 | **162.55 MiB/s** | **101.13 MiB/s** |
 
-Those require separate integration-specific experiments.
+### What the result means
 
-## Next integration step
+**Receipts are one of the strongest ZChain workloads in the current public corpus.** The v4 compatibility profile keeps the tested v3 compressed output while reaching 143.14 MiB/s encode; Speed_First increases throughput further when a new bitstream can be deployed end-to-end.
 
-A deeper Reth experiment should add an optional native payload source:
+Full block JSON is less compressible than receipts, but still shows **71.04% savings with v4** in the documented corpus.
 
-1. pull blocks from a Reth database or RPC provider;
-2. encode canonical block bodies and receipts as RLP or Reth database codec bytes;
-3. reuse the same ZChain metrics to compare JSON vs RLP vs database payloads;
-4. separately benchmark any future storage or networking hook in release mode.
+---
 
-This would extend the current JSON-RPC proof into a deeper Reth storage/networking evaluation while preserving clear measurement boundaries.
+## Practical advantages being evaluated
+
+If validated in the relevant production path, this type of compression can target:
+
+1. **Smaller RPC responses** for data-heavy services.
+2. **Reduced archive/export size** for structured block and receipt data.
+3. **Lower transfer cost** between execution-data systems, analytics and storage tiers.
+4. **Potential future storage/network savings** where codec latency remains acceptable.
+
+The benchmark does **not** claim that Reth P2P traffic or database size automatically shrinks by the same percentages.
+
+---
+
+## Integrity
+
+The standalone Reth release benchmark reports **10/10 SHA-256 verified round trips** on the documented Ethereum payloads.
+
+Lossless round-trip validation is a requirement for every public ZChain benchmark path.
+
+---
+
+## Next engineering steps
+
+A deeper Reth evaluation should:
+
+- pull canonical block bodies and receipts from a Reth database or RPC provider;
+- compare JSON against RLP and Reth database codec representations;
+- benchmark any storage hook independently;
+- benchmark any networking hook independently;
+- report p50/p95/p99 latency on representative execution-client hardware.
+
+---
+
+## Related pages
+
+- [ZChain evolution: v3 → v4 → Speed_First](../README.md)
+- [Selected codec comparison](COMPRESSION_COMPARISON.md)
+- [Native C benchmark methodology](ZCHAIN_C_REAL_BENCH_REPORT.md)
+- [Public claims and boundaries](PUBLIC_CLAIMS.md)

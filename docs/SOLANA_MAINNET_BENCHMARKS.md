@@ -1,58 +1,131 @@
-# ZChain Benchmarks for Solana Mainnet RPC Payloads
+# Solana Mainnet — ZChain Benchmark Page
 
-This document describes the public Solana mainnet JSON-RPC payload corpus used by the ZChain C benchmark harness.
+[← Documentation index](README.md) · [Product evolution](../README.md) · [Agave integration](AGAVE_INTEGRATION.md)
 
-## Dataset
+This page documents ZChain on **real Solana mainnet JSON-RPC payloads**. It is intentionally separate from the Agave validator-integration page: this page measures codec behavior on Solana data; the Agave page covers validator-facing integration architecture.
 
-The fetcher collects:
+## What we compress
 
-- `getBlock` with full transaction details
-- `getBlock` with signatures only
-- `getBlockCommitment`
-- `getBlockProduction`
-- `getTransaction` for sampled signatures
+The public Solana dataset contains:
+
+- `getBlock` with **full transaction details**;
+- `getBlock` with **signatures only**;
+- `getBlockCommitment`;
+- `getBlockProduction`;
+- sampled `getTransaction` responses.
 
 Historical v3 C release corpus:
 
 - **21 files**
 - **26,106,696 raw bytes**
-- **4,493,986 ZChain bytes**
+- **4,493,986 compressed bytes**
 - **82.79% aggregate savings**
 
-## v3 C release results
+## Why Solana data is relevant
 
-| Dataset | Files | Input bytes | ZChain bytes | Savings | Encode MiB/s | Decode MiB/s |
+Solana RPC can return very large, highly structured block and transaction responses. Full block JSON combines account keys, signatures, instructions, metadata, balances, logs and other repeated structural fields.
+
+Potential benefits being evaluated include:
+
+- reducing large RPC response sizes;
+- lowering bandwidth for block-data services and indexers;
+- reducing export/archive transfer size;
+- evaluating compression before any validator-side storage or network integration.
+
+A codec benchmark does not automatically translate into equivalent validator network savings; those require a separate integration test.
+
+---
+
+## Dataset methodology
+
+The public fetcher collects finalized Solana mainnet RPC payloads using a configurable `SOLANA_RPC_URL`.
+
+Representative fetch path:
+
+```bash
+cd agave/tools/solana-zchain-bench
+./fetch-solana-mainnet-payloads.sh ../../../solana-zchain-data/mainnet-rpc 5 10
+```
+
+Native benchmark path:
+
+```bash
+cd zchain-c-bench
+make clean && make
+./zchain_c_bench_release 30 ../solana-zchain-data/mainnet-rpc
+```
+
+The C harness reports compressed size, savings, encode/decode throughput, ns/byte, latency distribution and round-trip status.
+
+---
+
+## Historical v3 release results
+
+| Dataset | Files | Input bytes | ZChain bytes | Savings | Encode | Decode |
 |---|---:|---:|---:|---:|---:|---:|
-| all | 21 | 26,106,696 | 4,493,986 | **82.79%** | 73.44 | 11.19 |
-| `getBlock` full JSON | 5 | 25,484,748 | 4,032,707 | **84.18%** | 78.13 | 10.88 |
-| `getBlock` signatures JSON | 5 | 591,574 | 441,299 | 25.40% | 21.32 | 15.07 |
-| `getBlockCommitment` JSON | 5 | 820 | 560 | 31.71% | 4.43 | 3.04 |
-| `getBlockProduction` JSON | 1 | 17,501 | 12,516 | 28.48% | 22.29 | 15.22 |
-| `getTransaction` JSON | 5 | 12,053 | 6,904 | 42.72% | 21.18 | 12.24 |
+| **All Solana RPC** | 21 | 26,106,696 | 4,493,986 | **82.79%** | 73.44 MiB/s | 11.19 MiB/s |
+| `getBlock` full JSON | 5 | 25,484,748 | 4,032,707 | **84.18%** | 78.13 MiB/s | 10.88 MiB/s |
+| signatures-only | 5 | 591,574 | 441,299 | 25.40% | 21.32 MiB/s | 15.07 MiB/s |
+| `getBlockCommitment` | 5 | 820 | 560 | 31.71% | 4.43 MiB/s | 3.04 MiB/s |
+| `getBlockProduction` | 1 | 17,501 | 12,516 | 28.48% | 22.29 MiB/s | 15.22 MiB/s |
+| `getTransaction` | 5 | 12,053 | 6,904 | 42.72% | 21.18 MiB/s | 12.24 MiB/s |
 
-## Current profile comparison
+These v3 results are retained as part of the public evolution history.
 
-On the expanded 64-file public blockchain corpus, the newer profiles improve throughput substantially.
+---
 
-| Workload | Profile | Encode MiB/s | Decode MiB/s | Size behavior |
-|---|---|---:|---:|---|
-| Solana `getBlock` full JSON | v4 | **124.35** | **74.99** | 84.18% savings; same v3 bytes on tested corpus |
-| Solana `getBlock` full JSON | Speed_First | **138.55** | **81.98** | +1.78% compressed size vs v4 |
-| Solana signatures JSON | v4 | 36.53 | 21.30 | v3-compatible output on tested corpus |
-| Solana signatures JSON | Speed_First | 40.66 | 23.01 | +0.97% vs v4 |
-| Solana block production JSON | v4 | 38.20 | 22.55 | v3-compatible output on tested corpus |
-| Solana block production JSON | Speed_First | 42.37 | 24.34 | **-1.41% size vs v4** |
-| Solana transaction JSON | v4 | 46.46 | 35.77 | v3-compatible output on tested corpus |
-| Solana transaction JSON | Speed_First | 53.65 | 31.59 | **-0.07% size vs v4** |
+## v4 and Speed_First
 
-## Agave integration boundary
+The current 64-file corpus demonstrates the newer profile improvements on the same payload classes.
 
-These RPC payload benchmarks measure native codec behavior on Solana data. They are separate from the Agave integration harness.
+| Solana workload | v4 encode | v4 decode | v4 savings / behavior | Speed_First encode | Speed_First decode | Size delta vs v4 |
+|---|---:|---:|---|---:|---:|---:|
+| `getBlock` full JSON | **124.35** | **74.99** | **84.18% savings** | **138.55** | **81.98** | +1.78% |
+| signatures JSON | 36.53 | 21.30 | tested v3-compatible output | 40.66 | 23.01 | +0.97% |
+| `getBlockCommitment` | 48.91 | 42.10 | tested v3-compatible output | 56.15 | 37.69 | +0.00% |
+| `getBlockProduction` | 38.20 | 22.55 | tested v3-compatible output | 42.37 | 24.34 | **-1.41%** |
+| `getTransaction` | 46.46 | 35.77 | tested v3-compatible output | 53.65 | 31.59 | **-0.07%** |
 
-The Agave prototype provides fail-open shims, round-trip tooling, and a shred shadow probe. Its original development-build throughput figures are not used as native ZChain speed claims.
+All throughput values are MiB/s from the documented Apple M4 native release benchmark.
 
-## Public interpretation
+### Strongest Solana result
 
-The strongest Solana public result is the full-block JSON workload: **84.18% measured savings**, **124.35 MiB/s encode with v4**, and **138.55 MiB/s encode with Speed_First** on the documented Apple M4 release benchmark environment.
+The largest and most relevant payload class in this corpus is **full block JSON**:
 
-These results are workload-, hardware-, and build-specific.
+- v4: **84.18% savings**, **124.35 MiB/s encode**, **74.99 MiB/s decode**;
+- Speed_First: **138.55 MiB/s encode**, **81.98 MiB/s decode**, with +1.78% compressed size vs v4.
+
+This is the clearest public Solana use case because it combines a large real payload with strong compression and high release throughput.
+
+---
+
+## Native codec vs Agave integration
+
+These Solana RPC numbers are **native C codec measurements on Solana payloads**. They are not the same thing as the Agave integration harness.
+
+The Agave prototype includes fail-open shims, benchmark tooling and a shred shadow path. Its original development-build timing is excluded from native ZChain speed claims because that run did not isolate optimized codec cost.
+
+[Read the Agave integration page](AGAVE_INTEGRATION.md)
+
+---
+
+## What is not claimed
+
+The current Solana RPC benchmark does not by itself prove:
+
+- validator TPU/TVU bandwidth savings;
+- shred wire-format compatibility;
+- blockstore storage savings;
+- mainnet validator latency impact;
+- production Agave throughput.
+
+Those require dedicated integration-level measurements.
+
+---
+
+## Related pages
+
+- [Agave integration](AGAVE_INTEGRATION.md)
+- [v3 → v4 → Speed_First evolution](../README.md)
+- [Selected codec comparison](COMPRESSION_COMPARISON.md)
+- [Public claims](PUBLIC_CLAIMS.md)

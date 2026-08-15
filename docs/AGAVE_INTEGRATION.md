@@ -1,165 +1,190 @@
-# ZChain × Agave Integration
+# Agave / Solana Validator — ZChain Integration Page
 
-This document presents the current public architecture of the ZChain v3 integration prototype for Agave.
+[← Documentation index](README.md) · [Product evolution](../README.md) · [Solana RPC benchmarks](SOLANA_MAINNET_BENCHMARKS.md)
 
-The goal of the current integration is **measurement and engineering validation**. It is deliberately designed so ZChain can be evaluated without turning a development experiment into a validator-failure dependency.
+This page documents the current **Agave-facing ZChain integration prototype**. Its purpose is engineering validation: expose safe integration points, measure compression behavior and collect evidence **before** making any production validator, storage or network claim.
 
-> **Performance scope:** the initial Agave benchmark run used development/non-release commands and is not suitable for ZChain codec speed claims. Development-build timing and throughput are intentionally excluded from the public performance story. Agave-specific performance requires a release-mode, in-memory benchmark that isolates codec cost from harness and integration overhead.
+## What is being integrated
 
-## Integration components
+The public Agave prototype includes:
 
 | Component | Role |
 |---|---|
-| `compression/api` | Small codec trait used by Agave-facing code |
-| `compression/zchainv3` | ZChain v3 Rust codec adapter |
-| `ledger/src/compression.rs` | Fail-open shims and benchmark metrics |
-| `tools/zchain-bench` | Single-file round-trip benchmark |
-| `tools/zchain-bench-dir` | Directory benchmark with CSV output |
-| `ledger/src/zc_shadow.rs` | Optional shred payload shadow probe |
+| `compression/api` | codec trait used by Agave-facing code |
+| `compression/zchainv3` | ZChain Rust adapter |
+| `ledger/src/compression.rs` | fail-open compression shims and benchmark metrics |
+| `tools/zchain-bench` | single-file round-trip benchmark |
+| `tools/zchain-bench-dir` | directory benchmark with CSV output |
+| `ledger/src/zc_shadow.rs` | optional shred payload shadow probe |
 
-## Fail-open processing model
+## Why Agave is a relevant integration target
+
+A Solana validator handles latency-sensitive data paths, so a compression codec is only useful if the **byte savings justify the CPU cost and latency** in the exact path being considered.
+
+The current integration is therefore designed to answer questions in stages:
+
+1. Can the codec be called safely from Agave-facing code?
+2. Are round trips lossless?
+3. What savings are observed on representative payloads?
+4. What is the isolated release-mode codec cost?
+5. What changes when the codec is placed beside a real shred, blockstore or transport path?
+
+This staged approach avoids turning an experiment into a validator failure dependency.
+
+---
+
+## Fail-open integration model
 
 ```mermaid
 flowchart TD
-    A[Agave payload] --> B[ZChain compression shim]
+    A[Agave payload] --> B[ZChain integration shim]
     B --> C[Attempt encode]
-    C --> D{Success?}
-    D -->|Yes| E[Compressed payload]
-    D -->|No| F[Original payload]
-    E --> G[Benchmark metrics / optional experiment]
+    C --> D{Compression succeeds?}
+    D -->|Yes| E[Compressed bytes + metrics]
+    D -->|No| F[Original bytes]
+    E --> G[Experiment / shadow path]
     F --> G
 ```
 
-The integration is currently **fail-open by design**: compression errors return the original bytes instead of failing validator paths.
+The current integration is **fail-open by design**: a compression failure returns the original bytes instead of failing the validator path.
 
-## Benchmark metrics path
+### Why that matters
 
-`ledger/src/compression.rs` exposes the benchmark-facing processing path used to collect metrics.
+For early integration work, compression is an optimization rather than a correctness dependency. The fail-open design lets the team measure behavior while keeping the normal payload available.
 
-The metric set includes:
+---
 
-- raw bytes;
-- compressed bytes;
-- compression ratio;
-- percentage savings;
-- encode time;
-- decode time;
-- encode throughput;
-- decode throughput;
-- SHA-256 round-trip integrity;
-- configurable buffer behavior.
+## Shred shadow probe
 
-The presence of timing/throughput instrumentation does **not** make every run publication-grade. Build profile, data path, harness overhead, and target hardware must be considered before speed is attributed to ZChain itself.
+`ledger/src/zc_shadow.rs` provides an optional measurement path for shred payloads.
 
 ```mermaid
 flowchart LR
-    A[Raw payload] --> B[Encode]
-    B --> C[Compressed payload]
-    C --> D[Decode]
-    D --> E[Restored payload]
-    A --> F[SHA-256 input]
-    E --> G[SHA-256 output]
-    F --> H{Match?}
-    G --> H
-    B --> I[Size + timing metrics]
-    D --> I
+    A[Ledger shred payload] --> B[Normal Agave path]
+    A --> C[ZChain shadow probe]
+    C --> D[Encode / decode]
+    D --> E[Size + integrity metrics]
+    B --> F[Wire behavior unchanged]
+    E --> F
 ```
 
-## Why the first Agave speed figures are excluded
+The important property is that the current shadow probe can evaluate ZChain **without changing Agave's network wire format**.
 
-The first public integration run used commands of the form:
+This is the preferred way to collect real shred evidence before considering an enabled compressed transport path.
+
+---
+
+## What we currently measure
+
+The integration tooling can record:
+
+- raw and compressed bytes;
+- compression ratio and savings;
+- encode/decode timing;
+- throughput;
+- SHA-256 round-trip integrity;
+- configurable buffer behavior.
+
+The presence of timing instrumentation does not make every run suitable for a public codec-speed claim. Build profile, hashing, I/O, copying and harness overhead must be separated from the codec itself.
+
+---
+
+## Agave benchmark history
+
+The first Agave benchmark commands were development/non-release runs:
 
 ```bash
 ./cargo run -p zchain-bench --features zchainv3 -- ...
 ./cargo run -p zchain-bench-dir --features zchainv3 -- ...
 ```
 
-without `--release`.
+Those runs validated integration behavior and round trips, but their throughput is **not used as a ZChain codec-speed claim**.
 
-Those results demonstrate integration behavior, compression savings, and round-trip verification, but **they do not isolate optimized codec throughput**. Potential contributors to the measured time include:
+A later Cargo release sanity check on the 6,000-byte benchmark report produced:
+
+- **51.88% savings**;
+- **7.63 MiB/s encode**;
+- **5.88 MiB/s decode**;
+- round trip **OK**.
+
+This remains an **integration-level measurement**, not the native codec baseline.
+
+Native C release measurements on Solana RPC payloads are documented separately and show materially higher codec throughput because they isolate in-memory codec work.
+
+[See Solana native payload benchmarks](SOLANA_MAINNET_BENCHMARKS.md)
+
+---
+
+## Why the original development speed figures are excluded
+
+The initial run did not isolate optimized codec time. Potential contributors included:
 
 - Rust development-build code generation;
-- integration/harness overhead;
-- file and benchmark bookkeeping;
-- SHA-256 and metrics work around the codec;
-- non-isolated allocation/copy paths in the surrounding harness.
+- integration and adapter overhead;
+- file/benchmark bookkeeping;
+- hashing and metrics work;
+- allocation or copy behavior around the codec.
 
-Therefore the initial Agave MiB/s values are excluded from ZChain performance claims.
+The correct public interpretation is therefore:
 
-This is a **measurement-scope limitation**, not evidence that ZChain itself runs at those development-build rates.
+> **The first Agave run proved integration and lossless round trips. It did not establish native ZChain throughput.**
 
-## Shred shadow probe
+---
 
-`ledger/src/zc_shadow.rs` provides an optional shadow path for measuring ZChain behavior on shred payloads.
+## Current use cases being evaluated
 
-```mermaid
-flowchart LR
-    A[Ledger shred payload] --> B[Normal Agave path]
-    A --> C[zc_shadow]
-    C --> D[ZChain encode/decode]
-    D --> E[Compression + integrity metrics]
-    B --> F[Network behavior unchanged]
-    E --> F
-```
+### 1. Shred shadow measurement
 
-The public value of this path is that it can measure compression behavior **without changing the wire format**.
+Observe raw-vs-compressed shred characteristics without changing network behavior.
 
-## Current public use cases
+### 2. Blockstore experiments
 
-### 1. Shred payload shadow measurement
+Measure whether selected stored payloads benefit enough from compression to justify CPU cost before enabling any write-path change.
 
-Use the shadow probe to observe raw-vs-ZChain behavior on shred payloads while leaving normal network behavior unchanged.
+### 3. Validator artifacts
 
-### 2. Blockstore storage experiments
+Benchmark logs, JSON or other structured validator artifacts using the directory tooling.
 
-Use the fail-open ledger shims to compare compressed and raw payload sizes before enabling any storage write path.
+### 4. Future transport experiment
 
-### 3. Validator artifact benchmarking
+Only after representative shadow data exists: evaluate an explicit compressed transport design with separate compatibility, latency and failure-mode validation.
 
-Use `zchain-bench-dir` against captured validator artifacts and export CSV rows containing ratio, savings, timing, and round-trip status. Only release-mode, properly isolated timing should be promoted to public codec-speed claims.
+---
 
-## Validation commands completed
+## What ZChain could provide if integration economics are favorable
 
-The current integration has been checked using:
+The potential advantages are straightforward:
 
-```bash
-./cargo check -p solana-ledger --features zchainv3
-./cargo check -p zchain-bench --features zchainv3
-./cargo check -p zchain-bench-dir --features zchainv3
-./cargo run -p zchain-bench --features zchainv3 -- ../ZChain_Benchmark_Report.md
-./cargo run -p zchain-bench-dir --features zchainv3 -- ../zchainv3-rs-full/src /tmp/zchain-src-bench.csv
-```
+- fewer bytes for selected validator data paths;
+- reduced storage or transfer pressure where compression is appropriate;
+- deterministic lossless reconstruction;
+- an optional fast profile when both endpoints can deploy together;
+- a compatibility-oriented profile when existing ZChain streams matter.
 
-These commands establish the current **development integration baseline**.
+Whether those advantages outweigh CPU/latency cost must be demonstrated on the real Agave path.
 
-## Required Agave performance benchmark
-
-The next publication-grade pass should use a release-mode codec-isolation path, for example:
-
-```bash
-cargo run --release -p zchain-bench --features zchainv3 -- ...
-cargo run --release -p zchain-bench-dir --features zchainv3 -- ...
-```
-
-and preferably add an in-memory benchmark that reports:
-
-- encode/decode MiB/s;
-- ns/byte or cycles/byte where available;
-- p50 / p95 / p99 latency;
-- compression savings alongside each performance result;
-- representative validator CPU/hardware details;
-- codec-only timing separated from I/O, hashing, CSV, and harness overhead.
+---
 
 ## Readiness boundary
 
-The current integration should be described as a **validated development prototype**, not as production-ready validator infrastructure.
+The current Agave work is a **validated development integration prototype**, not production-ready validator infrastructure.
 
-Known items still to address before stronger claims:
+Before a stronger claim, the integration should:
 
-- clean `unused_imports` warnings in the current port;
+- clean remaining `unused_imports` warnings;
 - clean or redesign `static_mut_refs` usage;
-- rerun benchmarks with `--release`;
-- isolate codec timing from surrounding harness work;
-- benchmark on target validator hardware;
-- collect real shred-shadow datasets and publish reproducible aggregates;
-- validate any future compressed write or transport path independently from the current shadow measurement path.
+- isolate codec timing in release mode;
+- benchmark on representative validator hardware;
+- collect representative shred-shadow datasets;
+- report p50/p95/p99 latency and throughput distributions;
+- validate any enabled storage or transport path independently;
+- test failure behavior and compatibility end-to-end.
+
+---
+
+## Related pages
+
+- [Solana mainnet payload benchmarks](SOLANA_MAINNET_BENCHMARKS.md)
+- [ZChain evolution: v3 → v4 → Speed_First](../README.md)
+- [Public claims and measurement boundaries](PUBLIC_CLAIMS.md)
+- [Native C benchmark methodology](ZCHAIN_C_REAL_BENCH_REPORT.md)
