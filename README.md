@@ -146,6 +146,39 @@ See [CometBFT / Cosmos benchmarks](docs/COMETBFT_COSMOS_BENCHMARKS.md).
 
 ---
 
+# Selected codec comparison
+
+For public comparison, ZChain is benchmarked against **gzip, Brotli, and LZMA2/7zip** on selected structured blockchain payloads. These are workload-specific results, not universal codec claims.
+
+## Ethereum receipts — 1 MiB
+
+| Codec | Final size | % original | Compression | Decompression |
+|---|---:|---:|---:|---:|
+| **ZChain Speed_First** | **43,318 B** | **4.13%** | **170 MiB/s** | **113 MiB/s** |
+| gzip-6 | 61,489 B | 5.86% | 185 MiB/s | 1,495 MiB/s |
+| **Brotli q5** | **42,279 B** | **4.03%** | 159 MiB/s | 2,127 MiB/s |
+| LZMA2 / 7zip p1 | **29,842 B** | **2.85%** | 101 MiB/s | 659 MiB/s |
+| LZMA2 / 7zip p5 | 43,876 B | 4.18% | 12.6 MiB/s | 562 MiB/s |
+
+On this Ethereum-receipts workload, ZChain produces about **30% less data than gzip-6** while encoding at a similar rate. It lands within about **2.4% of Brotli q5's final size** while encoding slightly faster. Against LZMA2 p5, ZChain is about **13.5× faster** in compression with a very similar final size.
+
+![Ethereum receipts codec comparison](assets/zchain-ethereum-receipts-comparison.svg)
+
+## Large structured JSON — `blocks-4m`
+
+| Codec | Final size | Encode |
+|---|---:|---:|
+| **ZChain Speed_First** | **165 KB** | **170 MiB/s** |
+| gzip-6 | 334 KB | 105 MiB/s |
+| Brotli q5 | 253 KB | 128 MiB/s |
+| LZMA2 p1 | 227 KB | 67 MiB/s |
+
+On this workload, ZChain produces about **50% less data than gzip-6**, **35% less than Brotli q5**, and **27% less than LZMA2 p1**, while encoding faster than all three listed configurations.
+
+See [Compression Comparison](docs/COMPRESSION_COMPARISON.md) for the full selected comparison and reporting rules.
+
+---
+
 # Benchmark policy
 
 ZChain publishes **native codec performance separately from integration-harness performance**.
@@ -188,6 +221,7 @@ All headline v3/v4/Speed_First figures in this README come from the same in-memo
 - [Reth / Ethereum benchmarks](docs/zchain-reth-benchmarks.md)
 - [Solana mainnet benchmarks](docs/SOLANA_MAINNET_BENCHMARKS.md)
 - [CometBFT / Cosmos benchmarks](docs/COMETBFT_COSMOS_BENCHMARKS.md)
+- [Selected codec comparison](docs/COMPRESSION_COMPARISON.md)
 - [Agave integration](docs/AGAVE_INTEGRATION.md)
 - [Public claims](docs/PUBLIC_CLAIMS.md)
 
